@@ -937,3 +937,490 @@ body.hx-theme::before {
     margin-left: 0;
   }
 }
+
+/* ============================================================================
+   Fase 3 — El visor del cielo
+   ----------------------------------------------------------------------------
+   El visor es la única zona que NO cambia con el tema: es una ventana al
+   espacio y los cuadros son PNG de fondo negro. Sobre una página clara, un
+   recorte negro se lee como un bloque pegado y el polvo tenue desaparece
+   contra el borde. Por eso usa tokens propios, fuera del sistema de temas.
+   ========================================================================== */
+
+:root {
+  --nawi-sky: #04050A;
+  --nawi-sky-line: rgba(196, 208, 245, 0.18);
+}
+
+.hx-theme .sky-stage {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 8.6;
+  min-height: 300px;
+  max-height: none;
+  background: var(--nawi-sky);
+  border: 0;
+  border-bottom: 1px solid var(--hx-line-soft);
+  border-radius: 0;
+}
+
+/* Con datos reales no hay viñeta ni grilla: cualquier degradado sobre el
+   recorte se puede confundir con una variación real de brillo. */
+.hx-theme .sky-stage.is-real {
+  /* El escenario se ajusta al recorte en vez de reservar una caja fija: con
+     4x el PNG mide 232px y una caja de 420 dejaba la mitad vacía. */
+  aspect-ratio: auto;
+  min-height: 0;
+  max-width: none;
+  display: grid;
+  place-items: center;
+  padding-block: var(--hx-space-lg);
+}
+
+/* --- El recorte, con marco de 1px --------------------------------------- */
+
+.hx-theme .pixel-marco {
+  position: relative;
+  line-height: 0;
+  /* La geometría del zoom no se toca: 58 px originales por escala entera. */
+  width: calc(58px * var(--zoom, 4));
+  height: calc(58px * var(--zoom, 4));
+}
+
+/* El marco va como pseudo-elemento y no como border: un border de 1px
+   reduciría el área del PNG en 2px y el escalado entero se rompería. */
+.hx-theme .pixel-marco::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--nawi-sky-line);
+  pointer-events: none;
+}
+
+.hx-theme .pixel-frame {
+  image-rendering: pixelated;
+}
+
+.hx-theme .sky-stage.is-suavizado .pixel-frame {
+  image-rendering: auto;
+}
+
+/* --- Cruz de posición esperada ----------------------------------------- */
+
+.hx-theme .target-marker.is-real {
+  border-color: var(--hx-solar);
+}
+
+.hx-theme .target-marker.is-real::before,
+.hx-theme .target-marker.is-real::after {
+  background: var(--hx-solar);
+}
+
+/* --- Rótulos sobre el recorte ------------------------------------------ */
+
+.hx-theme .image-caption,
+.hx-theme .coordinate-label,
+.hx-theme .image-date,
+.hx-theme .escala-aviso {
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--nawi-sky) 74%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hx-ink);
+}
+
+.hx-theme .image-caption {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  padding: 10px 14px;
+  border-top: 1px solid var(--nawi-sky-line);
+  border-right: 1px solid var(--nawi-sky-line);
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .caption-dot {
+  width: 5px;
+  height: 5px;
+  margin-right: 8px;
+  background: var(--hx-solar);
+  box-shadow: 0 0 12px 4px var(--hx-solar-glow);
+}
+
+.hx-theme .coordinate-label {
+  top: 0;
+  right: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--nawi-sky-line);
+  border-left: 1px solid var(--nawi-sky-line);
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .coordinate-label i {
+  color: var(--hx-solar);
+}
+
+.hx-theme .coordinate-label span {
+  color: var(--hx-ink-ghost);
+}
+
+.hx-theme .image-date {
+  left: auto;
+  right: 0;
+  bottom: 0;
+  gap: 4px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--nawi-sky-line);
+  border-left: 1px solid var(--nawi-sky-line);
+  align-items: flex-end;
+  text-align: right;
+}
+
+.hx-theme .image-date span {
+  font-family: var(--hx-font-display);
+  font-size: var(--hx-fs-small);
+  font-weight: 300;
+  letter-spacing: 0.10em;
+  font-variant-numeric: tabular-nums;
+  color: var(--hx-ink);
+}
+
+.hx-theme .image-date small {
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .frame-calidad {
+  color: var(--hx-solar);
+}
+
+/* Aviso de interpolado: se sube arriba a la derecha, el sitio que quedó libre. */
+.hx-theme .escala-aviso {
+  right: 0;
+  bottom: auto;
+  top: 0;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--hx-solar);
+  border-left: 1px solid var(--hx-solar);
+  color: var(--hx-solar);
+}
+
+.hx-theme .escala-aviso i {
+  color: var(--hx-solar);
+}
+
+/* --- Línea de tiempo --------------------------------------------------- */
+
+.hx-theme .timeline {
+  padding: var(--hx-space-sm) var(--hx-pad-sm);
+  border-top: 0;
+  border-bottom: 1px solid var(--hx-line-soft);
+  background: none;
+}
+
+.hx-theme .timeline-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-space-sm);
+}
+
+.hx-theme .timeline-title i {
+  margin-right: 6px;
+  color: var(--hx-solar);
+}
+
+.hx-theme .frame-counter {
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .frame-counter b {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--hx-solar);
+}
+
+/* Riel de 1px con un punto solar: el control deja de ser una barra rellena. */
+.hx-theme .time-range {
+  display: block;
+  width: 100%;
+  height: 14px;
+  margin: var(--hx-space-sm) 0 4px;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(
+    90deg,
+    var(--hx-solar) 0%,
+    var(--hx-solar) calc(var(--progress, 0%)),
+    var(--hx-line) calc(var(--progress, 0%)),
+    var(--hx-line) 100%
+  );
+  background-size: 100% 1px;
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.hx-theme .time-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--hx-solar);
+  box-shadow: 0 0 14px 4px var(--hx-solar-glow);
+  cursor: pointer;
+}
+
+.hx-theme .time-range::-moz-range-thumb {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--hx-solar);
+  box-shadow: 0 0 14px 4px var(--hx-solar-glow);
+  cursor: pointer;
+}
+
+.hx-theme .time-range::-moz-range-track {
+  height: 1px;
+  background: var(--hx-line);
+}
+
+.hx-theme .timeline-dates {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: stretch;
+  margin-top: 4px;
+}
+
+.hx-theme .date-tick {
+  min-height: 28px;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: var(--hx-ink-ghost);
+  cursor: pointer;
+  transition: color var(--hx-t-fast);
+}
+
+.hx-theme .date-tick:hover {
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .date-tick.current {
+  color: var(--hx-solar);
+}
+
+/* --- Controles de reproducción ----------------------------------------- */
+
+.hx-theme .player-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-space-sm);
+  padding: var(--hx-space-sm) var(--hx-pad-sm);
+  border-top: 0;
+  background: none;
+}
+
+.hx-theme .transport {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hx-theme .control-button,
+.hx-theme .play-button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--hx-line);
+  border-radius: 50%;
+  background: none;
+  color: var(--hx-ink-mute);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color var(--hx-t-fast), color var(--hx-t-fast);
+}
+
+.hx-theme .control-button:hover,
+.hx-theme .play-button:hover {
+  border-color: var(--hx-line-hot);
+  color: var(--hx-solar);
+  background: none;
+}
+
+.hx-theme .play-button {
+  width: 34px;
+  height: 34px;
+  border-color: var(--hx-solar);
+  color: var(--hx-solar);
+}
+
+.hx-theme .play-caption {
+  margin-left: 6px;
+  color: var(--hx-ink-faint);
+}
+
+/* --- Zoom y escalado --------------------------------------------------- */
+
+.hx-theme .zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hx-theme .zoom-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 4px;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .zoom-button,
+.hx-theme .zoom-mode {
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--hx-line);
+  border-radius: 0;
+  background: none;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--hx-ink-mute);
+  cursor: pointer;
+  transition: border-color var(--hx-t-fast), color var(--hx-t-fast);
+}
+
+.hx-theme .zoom-button:hover,
+.hx-theme .zoom-mode:hover {
+  border-color: var(--hx-line-hot);
+  color: var(--hx-ink);
+}
+
+/* Activo: borde y texto en oro, sin relleno. */
+.hx-theme .zoom-button.is-active {
+  border-color: var(--hx-solar);
+  color: var(--hx-solar);
+  background: none;
+}
+
+.hx-theme .zoom-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 500px;
+}
+
+.hx-theme .zoom-mode.is-suave {
+  border-color: var(--hx-solar);
+  color: var(--hx-solar);
+}
+
+.hx-theme .compare-button {
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1px solid var(--hx-line);
+  border-radius: 500px;
+  background: none;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-ink-mute);
+  cursor: pointer;
+  transition: border-color var(--hx-t-fast), color var(--hx-t-fast);
+}
+
+.hx-theme .compare-button:hover {
+  border-color: var(--hx-line-hot);
+  color: var(--hx-ink);
+}
+
+.hx-theme .compare-button.is-on {
+  border-color: var(--hx-solar);
+  color: var(--hx-solar);
+  background: none;
+}
+
+@media (max-width: 900px) {
+  .hx-theme .sky-stage {
+    min-height: 260px;
+  }
+
+  .hx-theme .sky-stage.is-real {
+    padding-block: var(--hx-space-md);
+  }
+
+  .hx-theme .player-controls {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .hx-theme .sky-stage {
+    min-height: 220px;
+  }
+
+  .hx-theme .sky-stage.is-real {
+    padding-block: var(--hx-space-sm);
+  }
+
+  .hx-theme .timeline,
+  .hx-theme .player-controls {
+    padding-inline: var(--hx-pad-xs);
+  }
+
+  .hx-theme .play-caption {
+    display: none;
+  }
+
+  .hx-theme .image-caption,
+  .hx-theme .coordinate-label,
+  .hx-theme .image-date,
+  .hx-theme .escala-aviso {
+    padding: 7px 9px;
+    font-size: 9px;
+  }
+
+  .hx-theme .coordinate-label {
+    max-width: 100%;
+  }
+}
