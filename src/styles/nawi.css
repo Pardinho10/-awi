@@ -1424,3 +1424,311 @@ body.hx-theme::before {
     max-width: 100%;
   }
 }
+
+/* ============================================================================
+   Fase 4 — Latido y Rastro
+   ----------------------------------------------------------------------------
+   El SVG ya usaba clases, así que el recoloreo se hace desde acá sin tocar
+   los componentes: los datos y la geometría de los gráficos no cambian.
+   ========================================================================== */
+
+.hx-theme .latido-panel,
+.hx-theme .rastro-panel {
+  margin-top: var(--hx-space-md);
+  padding: var(--hx-pad-sm);
+}
+
+.hx-theme .latido-head,
+.hx-theme .rastro-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--hx-space-sm);
+  padding-bottom: var(--hx-space-sm);
+  border-bottom: 1px solid var(--hx-line-soft);
+}
+
+.hx-theme .latido-head h2,
+.hx-theme .rastro-head h2 {
+  margin-top: 8px;
+  font-size: 1.35rem;
+  font-weight: 200;
+  letter-spacing: var(--hx-track-heading);
+  text-transform: uppercase;
+  color: var(--hx-ink);
+}
+
+.hx-theme .latido-chip,
+.hx-theme .rastro-chip {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--hx-line);
+  border-radius: 500px;
+  background: none;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .latido-intro,
+.hx-theme .rastro-intro {
+  margin-top: var(--hx-space-sm);
+  max-width: 68ch;
+  font-size: var(--hx-fs-small);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--hx-ink-mute);
+}
+
+/* --- Gráfico del latido ------------------------------------------------- */
+
+.hx-theme .latido-svg {
+  margin-top: var(--hx-space-sm);
+}
+
+/* La grilla es el mismo hairline que estructura el resto: 1px, muy bajo. */
+.hx-theme .latido-grid {
+  stroke: var(--hx-line);
+  stroke-width: 1;
+  stroke-opacity: 0.55;
+}
+
+.hx-theme .latido-axis {
+  stroke: var(--hx-line);
+  stroke-width: 1;
+  stroke-opacity: 1;
+}
+
+.hx-theme .latido-tick {
+  fill: var(--hx-ink-faint);
+  font-family: var(--hx-font-mono);
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hx-theme .latido-eje-titulo {
+  fill: var(--hx-ink-faint);
+  font-family: var(--hx-font-mono);
+  font-size: 9.5px;
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+}
+
+/* La curva es el trazo principal: plasma, no oro. El oro queda para el punto
+   de la medición, que es el dato que se lee. */
+.hx-theme .latido-linea {
+  fill: none;
+  stroke: var(--hx-plasma);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-opacity: 0.9;
+}
+
+.hx-theme .latido-dot {
+  fill: var(--hx-solar);
+  stroke: var(--nawi-sky);
+  stroke-width: 1.5;
+}
+
+.hx-theme .latido-punto:hover .latido-dot {
+  fill: var(--hx-solar-hot);
+}
+
+.hx-theme .latido-lambda {
+  fill: var(--hx-ink-mute);
+  font-family: var(--hx-font-mono);
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  /* Halo del color del panel: la etiqueta de longitud de onda cruza la curva
+     y sin separación se vuelve ilegible justo donde hay más datos. */
+  paint-order: stroke fill;
+  stroke: var(--hx-void);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.hx-theme .latido-error {
+  stroke: var(--hx-plasma);
+  stroke-width: 1;
+  stroke-opacity: 0.7;
+  stroke-linecap: round;
+}
+
+.hx-theme .latido-pie {
+  margin-top: var(--hx-space-sm);
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  line-height: 1.6;
+  letter-spacing: 0.06em;
+  color: var(--hx-ink-ghost);
+  text-transform: none;
+}
+
+.hx-theme .latido-estado {
+  padding: var(--hx-space-md) 0;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+/* --- Métricas del rastro ------------------------------------------------ */
+
+/* Dejan de ser tarjetas con relleno: pasan a columnas separadas por hairlines,
+   que es como el tema agrupa cifras. */
+.hx-theme .rastro-metricas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0;
+  margin: var(--hx-space-md) 0 0;
+  border-top: 1px solid var(--hx-line-soft);
+}
+
+.hx-theme .rastro-metrica {
+  padding: var(--hx-space-sm) var(--hx-space-sm) var(--hx-space-sm) 0;
+  border: 0;
+  border-bottom: 1px solid var(--hx-line-soft);
+  border-radius: 0;
+  background: none;
+}
+
+/* La hairline vertical separa columnas sin dibujar la primera. */
+.hx-theme .rastro-metrica + .rastro-metrica {
+  padding-left: var(--hx-space-sm);
+  border-left: 1px solid var(--hx-line-soft);
+}
+
+.hx-theme .rastro-metrica-ancha {
+  grid-column: 1 / -1;
+  padding-left: 0;
+  border-left: 0;
+}
+
+.hx-theme .rastro-metrica dt {
+  margin-bottom: 8px;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .rastro-valor {
+  font-family: var(--hx-font-display);
+  font-size: 1.5rem;
+  font-weight: 200;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--hx-ink);
+}
+
+.hx-theme .rastro-nota {
+  margin-left: 8px;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+/* Validación contra el catálogo: dos estados, sin semáforo de colores. */
+.hx-theme .rastro-validacion {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: var(--hx-space-sm);
+  padding: 10px 12px;
+  border: 0;
+  border-left: 1px solid var(--hx-line);
+  background: none;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .rastro-validacion.is-ok {
+  border-left-color: var(--hx-plasma);
+}
+
+.hx-theme .rastro-validacion.is-ok i {
+  color: var(--hx-plasma);
+}
+
+.hx-theme .rastro-validacion.is-off {
+  border-left-color: var(--hx-solar);
+}
+
+.hx-theme .rastro-validacion.is-off i {
+  color: var(--hx-solar);
+}
+
+/* La frase divulgativa, como cita con hairline a la izquierda. */
+.hx-theme .rastro-frase {
+  margin: var(--hx-space-md) 0 0;
+  padding: var(--hx-space-sm) 0 var(--hx-space-sm) var(--hx-space-sm);
+  border: 0;
+  border-left: 1px solid var(--hx-solar);
+  background: none;
+}
+
+.hx-theme .rastro-frase-texto {
+  font-family: var(--hx-font-display);
+  font-size: var(--hx-fs-h3);
+  font-weight: 200;
+  line-height: 1.35;
+  letter-spacing: 0.005em;
+  text-transform: none;
+  color: var(--hx-ink);
+  text-wrap: pretty;
+}
+
+.hx-theme .rastro-frase-fuente {
+  margin-top: var(--hx-space-sm);
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-ink-ghost);
+}
+
+@media (max-width: 560px) {
+  .hx-theme .latido-panel,
+  .hx-theme .rastro-panel {
+    padding: var(--hx-pad-xs);
+  }
+
+  .hx-theme .latido-head,
+  .hx-theme .rastro-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Una columna: la hairline vertical de separación sobra. */
+  .hx-theme .rastro-metrica + .rastro-metrica {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .hx-theme .rastro-valor {
+    font-size: 1.25rem;
+  }
+
+  .hx-theme .rastro-frase-texto {
+    font-size: 1.1rem;
+  }
+}
