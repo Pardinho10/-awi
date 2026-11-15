@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- 1. tu CSS existente, como siempre -->
+<style>
+  /* simulación de un proyecto Bootstrap-ish ya montado */
+  body { background:#fff; color:#212529; font-family:system-ui,sans-serif; margin:0; }
+  a { color:#0d6efd; text-decoration:underline; }
+  .btn { display:inline-block; padding:.375rem .75rem; border-radius:.375rem; background:#0d6efd; color:#fff; }
+  .panel { background:#f8f9fa; border:1px solid #dee2e6; border-radius:8px; padding:1rem; }
+  .label { font-weight:600; color:#495057; }
+  .wrap { padding: 2rem; }
+</style>
+
+<!-- 2. fuentes del tema -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@100;200;300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+<!-- 3. el paquete, después de tu CSS -->
+<link rel="stylesheet" href="helios-tokens.css">
+<link rel="stylesheet" href="helios-base.css">
+</head>
+<body>
+
+<!-- ============ ZONA EXISTENTE: intacta ============ -->
+<div class="wrap">
+  <h1>Proyecto existente</h1>
+  <p class="label">Etiqueta existente</p>
+  <div class="btn">Botón existente</div>
+  <div class="panel">Panel existente — no debe cambiar</div>
+</div>
+
+<!-- ============ ZONA HELIOS: aislada ============ -->
+<section class="hx-theme" style="padding:4rem 2rem">
+  <div class="hx-wrap">
+    <span class="hx-label hx-label--solar">Zona Helios</span>
+    <h2 class="hx-h2" style="margin-top:1rem">Aislada del resto</h2>
+
+    <div class="hx-panel" style="margin-top:2rem">
+      <p>Este panel usa el tema Helios. El de arriba no.</p>
+    </div>
+    <div class="hx-panel hx-panel--stacked">
+      <p>Panel apilado: comparte el borde con el anterior.</p>
+    </div>
+
+    <div style="display:flex; gap:.8rem; margin-top:2rem; flex-wrap:wrap">
+      <button class="hx-btn">Ghost</button>
+      <button class="hx-btn hx-btn--solar">Solar</button>
+      <span class="hx-light hx-light--breathe"></span>
+      <span class="hx-light hx-light--plasma hx-light--lg"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ZONA EXISTENTE OTRA VEZ ============ -->
+<div class="wrap">
+  <div class="panel">Panel existente de nuevo — sigue igual</div>
+</div>
+
+<script src="helios.js"></script>
+</body>
+</html>

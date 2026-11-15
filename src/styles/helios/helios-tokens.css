@@ -1,0 +1,80 @@
+/* HELIOS — tokens (prefixed drop-in)
+   Adopt: add class `hx-theme`. States: html.hx-js, .hx-is-loaded
+   No global side effects. */
+:root { --hx-void:        #07080F;
+  --hx-void-deep:   #04050A;
+  --hx-surface:     #0C0E1C;
+  --hx-surface-2:   #11142A;
+
+  
+  --hx-ink:         #E8ECFB;
+  --hx-ink-mute:    rgba(232, 236, 251, 0.52);
+  --hx-ink-faint:   rgba(232, 236, 251, 0.30);
+  --hx-ink-ghost:   rgba(232, 236, 251, 0.14);
+
+  
+  --hx-solar:       #E8B04B;
+  --hx-solar-hot:   #FFD27A;
+  --hx-solar-deep:  #B9822C;
+  --hx-solar-glow:  rgba(232, 176, 75, 0.14);
+  --hx-solar-wash:  rgba(232, 176, 75, 0.055);
+
+  
+  --hx-plasma:      #7FB4E8;
+  --hx-plasma-glow: rgba(127, 180, 232, 0.24);
+
+  
+  --hx-line:        rgba(196, 208, 245, 0.16);
+  --hx-line-soft:   rgba(196, 208, 245, 0.08);
+  --hx-line-faint:  rgba(196, 208, 245, 0.05);
+  --hx-line-hot:    rgba(232, 176, 75, 0.30);
+
+  
+  --hx-font-display: "Urbanist", system-ui, -apple-system, sans-serif;
+  --hx-font-mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --hx-fs-display:  clamp(3.4rem, 12.5vw, 9.5rem);
+  --hx-fs-h1:       clamp(2.4rem, 7vw, 5rem);
+  --hx-fs-h2:       clamp(1.9rem, 4.4vw, 3.2rem);
+  --hx-fs-h3:       clamp(1.35rem, 2.6vw, 2rem);
+  --hx-fs-lead:     clamp(0.95rem, 1.4vw, 1.15rem);
+  --hx-fs-body:     1rem;
+  --hx-fs-small:    0.875rem;
+  --hx-fs-label:    11px;
+  --hx-fs-micro:    10px;
+
+  --hx-track-display: 0.085em;
+  --hx-track-heading: 0.06em;
+  --hx-track-label:   0.20em;
+  --hx-track-wide:    0.34em;
+
+  
+  --hx-t-fast:  0.15s ease;
+  --hx-t-base:  0.3s ease;
+  --hx-t-slow:  0.55s cubic-bezier(0.77, 0, 0.175, 1);
+  --hx-t-rise:  1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  --hx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  
+  --hx-pad:      40px;
+  --hx-pad-sm:   28px;
+  --hx-pad-xs:   20px;
+  --hx-nav-h:    80px;
+  --hx-maxw:     1280px;
+
+  --hx-space-xs: 8px;
+  --hx-space-sm: 16px;
+  --hx-space-md: 32px;
+  --hx-space-lg: 64px;
+  --hx-space-xl: 128px; }
+@media (max-width: 900px) {
+  :root { --hx-pad:    var(--hx-pad-sm);
+    --hx-nav-h:  72px;
+    --hx-space-xl: 88px; }
+}
+@media (max-width: 560px) {
+  :root { --hx-pad:    var(--hx-pad-xs);
+    --hx-track-display: 0.06em;
+    --hx-track-wide:    0.22em;
+    --hx-track-label:   0.16em; }
+}
