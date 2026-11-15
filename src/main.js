@@ -12,6 +12,10 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import './styles.css';
 import './styles/helios/helios-base.css';
 
+/* Capa propia de Ñawi: traduce la interfaz al lenguaje de Helios.
+   Va al final porque es la que debe ganar mientras styles.css siga vivo. */
+import './styles/nawi.css';
+
 /* Comportamiento opcional de Helios (reveal al hacer scroll, estado del nav,
    cursor). Sólo actúa si existe un elemento con la clase `hx-theme`, así que
    cargarlo ahora no cambia nada hasta que la migración lo active. */

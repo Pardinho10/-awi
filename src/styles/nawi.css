@@ -1,0 +1,419 @@
+/* ============================================================================
+   ÑAWI — capa propia sobre el tema Helios
+   ----------------------------------------------------------------------------
+   Helios (src/styles/helios/) aporta los tokens y los componentes base.
+   Este archivo traduce la interfaz de Ñawi a ese lenguaje: estructura con
+   hairlines de 1px, superficies sin relleno, radio 0 salvo en controles
+   circulares, titulares en peso 200/300 y metadatos en mono.
+
+   Se carga DESPUÉS de styles.css. Todas las reglas cuelgan de `.hx-theme`,
+   que es lo que les da el aislamiento y, de paso, la especificidad suficiente
+   para ganarle a la hoja vieja mientras dure la convivencia.
+
+   Fase 1: shell y tipografía (topbar, hero, footer).
+   ========================================================================== */
+
+/* --- Activación del tema ------------------------------------------------- */
+
+body.hx-theme {
+  background: var(--hx-void);
+  color: var(--hx-ink);
+  font-family: var(--hx-font-display);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* El tema trae un halo radial fijo sobre toda la página. Acá no sirve: teñiría
+   también los cuadros de SPHEREx, y esos píxeles son datos. El halo se aplica
+   sólo al hero, que es donde cumple una función. */
+body.hx-theme::before {
+  display: none;
+}
+
+.hx-theme ::selection {
+  background: var(--hx-solar);
+  color: var(--hx-void-deep);
+}
+
+/* --- Tipografía base ---------------------------------------------------- */
+
+.hx-theme h1,
+.hx-theme h2,
+.hx-theme h3 {
+  margin: 0;
+  font-family: var(--hx-font-display);
+  font-weight: 200;
+  letter-spacing: var(--hx-track-heading);
+  color: var(--hx-ink);
+}
+
+.hx-theme p {
+  margin: 0;
+}
+
+/* Rótulos: mono, versalitas, tracking amplio. Sustituye al viejo `.eyebrow`
+   y a todos los metadatos que compartían esa tipografía. */
+.hx-theme .eyebrow,
+.hx-theme .mission-label,
+.hx-theme .image-caption,
+.hx-theme .coordinate-label,
+.hx-theme .target-label,
+.hx-theme .timeline-title,
+.hx-theme .frame-counter,
+.hx-theme .play-caption,
+.hx-theme .keyboard-hint,
+.hx-theme .footer {
+  font-family: var(--hx-font-mono);
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+/* --- Shell ------------------------------------------------------------- */
+
+.hx-theme .app-shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--hx-pad);
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Topbar ------------------------------------------------------------ */
+
+/* Sticky y no fixed: Helios reserva 80px de banda para un nav fijo, y acá el
+   contenido arranca con un hero grande que no conviene tapar. */
+.hx-theme .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--hx-nav-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-space-sm);
+  border-bottom: 1px solid var(--hx-line-soft);
+  background: color-mix(in srgb, var(--hx-void) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* La marca no es un titular: se queda en minúscula y con la tilde. */
+.hx-theme .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--hx-font-display);
+  font-weight: 300;
+  font-size: 21px;
+  letter-spacing: 0.10em;
+  color: var(--hx-ink);
+  text-decoration: none;
+  transition: color var(--hx-t-fast);
+}
+
+.hx-theme .brand:hover {
+  color: var(--hx-solar);
+}
+
+.hx-theme .brand-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--hx-line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--hx-solar);
+}
+
+.hx-theme .brand-dot {
+  color: var(--hx-solar);
+}
+
+.hx-theme .mission-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--hx-fs-micro);
+  letter-spacing: var(--hx-track-wide);
+  color: var(--hx-ink-faint);
+}
+
+/* El punto que late: es una `hx-light` en miniatura. */
+.hx-theme .live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--hx-solar);
+  box-shadow: 0 0 14px 5px var(--hx-solar-glow);
+  animation: hx-breathe 6s ease-in-out infinite;
+}
+
+.hx-theme .label-divider {
+  color: var(--hx-ink-ghost);
+}
+
+.hx-theme .topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Controles circulares: el único lugar del tema donde el radio es bienvenido. */
+.hx-theme .icon-button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hx-line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--hx-ink-mute);
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color var(--hx-t-fast), color var(--hx-t-fast);
+}
+
+.hx-theme .icon-button:hover {
+  border-color: var(--hx-line-hot);
+  color: var(--hx-solar);
+}
+
+/* --- Hero -------------------------------------------------------------- */
+
+.hx-theme .intro-row {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--hx-space-lg);
+  margin-top: 0;
+  padding: var(--hx-space-lg) 0 var(--hx-space-lg);
+  border: 0;
+  border-bottom: 1px solid var(--hx-line-soft);
+  border-radius: 0;
+  background: none;
+  overflow: hidden;
+}
+
+/* El halo solar del tema, contenido en el hero. */
+.hx-theme .intro-row::before {
+  content: "";
+  position: absolute;
+  inset: -40% -10% auto -10%;
+  height: 130%;
+  pointer-events: none;
+  background: radial-gradient(60% 60% at 22% 40%, var(--hx-solar-wash), transparent 70%);
+}
+
+.hx-theme .intro-row > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hx-theme .intro-row .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--hx-fs-micro);
+  letter-spacing: var(--hx-track-wide);
+  color: var(--hx-solar);
+}
+
+.hx-theme .intro-row .eyebrow span {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--hx-ink-faint);
+}
+
+/* Titular en versalitas con tracking amplio, peso 200. La coma y el punto
+   final se mantienen porque son parte de la frase, no decoración. */
+.hx-theme .intro-row h1 {
+  margin: var(--hx-space-md) 0 0;
+  font-size: clamp(2.1rem, 5.4vw, 4.4rem);
+  font-weight: 200;
+  line-height: 1.04;
+  letter-spacing: var(--hx-track-display);
+  text-transform: uppercase;
+  color: var(--hx-ink);
+  text-wrap: balance;
+}
+
+.hx-theme .intro-row h1 .hero-line {
+  display: block;
+  /* La hoja vieja pinta todo `span` dentro del h1 con el acento rosa.
+     La primera línea es tinta, no acento. */
+  color: var(--hx-ink);
+}
+
+/* Una sola palabra en oro por titular. */
+.hx-theme .intro-row h1 .hero-gild {
+  background: linear-gradient(100deg, var(--hx-solar) 0%, var(--hx-solar-hot) 55%, var(--hx-solar) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.hx-theme .intro-copy {
+  max-width: 46ch;
+  margin-top: var(--hx-space-md);
+  font-size: var(--hx-fs-lead);
+  font-weight: 300;
+  line-height: 1.65;
+  letter-spacing: 0.005em;
+  color: var(--hx-ink-mute);
+}
+
+/* --- Cifras de misión -------------------------------------------------- */
+
+.hx-theme .mission-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--hx-space-md);
+  margin-bottom: 0;
+  padding-left: var(--hx-space-md);
+  border-left: 1px solid var(--hx-line);
+  flex-shrink: 0;
+}
+
+.hx-theme .stat-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--hx-line);
+  border-radius: 50%;
+  color: var(--hx-solar);
+  font-size: 15px;
+  background: none;
+}
+
+/* Cifras tabulares: sin esto los números bailan al cambiar de cuadro. */
+.hx-theme .mission-stat strong {
+  display: block;
+  font-family: var(--hx-font-display);
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: 0.045em;
+  font-variant-numeric: tabular-nums;
+  color: var(--hx-ink);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+.hx-theme .mission-stat strong small {
+  font-size: 0.48em;
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .mission-stat > div > span {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .stat-rule {
+  width: 1px;
+  height: 40px;
+  background: var(--hx-line);
+}
+
+/* --- Footer ------------------------------------------------------------ */
+
+.hx-theme .footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-space-sm);
+  height: auto;
+  margin-top: var(--hx-space-lg);
+  padding: var(--hx-space-md) 0;
+  border-top: 1px solid var(--hx-line-soft);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: var(--hx-track-wide);
+  color: var(--hx-ink-faint);
+  background: none;
+}
+
+.hx-theme .footer-dot {
+  color: var(--hx-solar);
+}
+
+/* --- Responsive -------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .hx-theme .intro-row {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: var(--hx-space-lg);
+  }
+
+  .hx-theme .mission-stat {
+    padding-left: 0;
+    padding-top: var(--hx-space-md);
+    border-left: 0;
+    border-top: 1px solid var(--hx-line-soft);
+    width: 100%;
+  }
+
+  .hx-theme .mission-stat > div {
+    flex: 1 1 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .hx-theme .brand {
+    font-size: 19px;
+  }
+
+  .hx-theme .mission-label {
+    display: none;
+  }
+
+  .hx-theme .footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* En 390px las dos cifras con sus rótulos no entran en una fila sin
+     apretarse. Se quitan el ícono y la regla, que acá sólo decoran, y las
+     cifras se reparten con espacio entre ellas. */
+  .hx-theme .mission-stat {
+    justify-content: space-between;
+    gap: var(--hx-space-md);
+  }
+
+  .hx-theme .stat-icon,
+  .hx-theme .stat-rule {
+    display: none;
+  }
+
+  .hx-theme .mission-stat > div > span {
+    letter-spacing: 0.12em;
+  }
+}
+
+/* Animación de respiración del tema, replicada acá para el punto del nav. */
+@keyframes hx-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-theme .live-dot {
+    animation: none;
+  }
+}

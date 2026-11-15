@@ -383,7 +383,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 <template>
   <main class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="Nawi, inicio"><span class="brand-mark"><i class="bi bi-eye-fill" /></span><span>nawi<span class="brand-dot">.</span></span></a>
+      <a class="brand" href="#inicio" aria-label="Ñawi, inicio"><span class="brand-mark"><i class="bi bi-eye-fill" /></span><span>ñawi<span class="brand-dot">.</span></span></a>
       <div class="mission-label"><span class="live-dot" /> EXPLORADOR INFRARROJO <span class="label-divider">/</span> SPHEREx</div>
       <div class="topbar-actions">
         <button class="icon-button theme-button" :title="isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'" :aria-label="isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'" :aria-pressed="isLight" @click="toggleTheme"><i class="bi" :class="isLight ? 'bi-moon-stars' : 'bi-brightness-high'" /></button>
@@ -392,7 +392,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
     </header>
 
     <section id="inicio" class="intro-row">
-      <div><div class="eyebrow"><span>01</span> OBSERVATORIO DIGITAL</div><h1>El cielo cambia.<br /><span>Ahora podés verlo.</span></h1><p class="intro-copy">Viajá a través de observaciones infrarrojas reales y seguí las huellas que dejan los objetos celestes.</p></div>
+      <div><div class="eyebrow"><span>01</span> OBSERVATORIO DIGITAL</div><h1><span class="hero-line">El cielo cambia.</span><span class="hero-line">Ahora podés <span class="hero-gild">verlo.</span></span></h1><p class="intro-copy">Viajá a través de observaciones infrarrojas reales y seguí las huellas que dejan los objetos celestes.</p></div>
       <div class="mission-stat"><span class="stat-icon"><i class="bi bi-stars" /></span><div><strong>102</strong><span>bandas infrarrojas</span></div><div class="stat-rule" /><div><strong>6 <small>meses</small></strong><span>entre mapeos del cielo</span></div></div>
     </section>
 
@@ -489,7 +489,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
       </div>
     </div>
 
-    <footer class="footer"><span>NAWI <span class="footer-dot">·</span> UN OJO INFRARROJO PARA TODOS</span><span>DATOS DE MISIÓN SPHEREx <i class="bi bi-arrow-up-right" /></span></footer>
+    <footer class="footer"><span>ÑAWI <span class="footer-dot">·</span> UN OJO INFRARROJO PARA TODOS</span><span>DATOS DE MISIÓN SPHEREx <i class="bi bi-arrow-up-right" /></span></footer>
     <div v-if="notice" class="toast-note" role="status"><i class="bi bi-check-circle-fill" /> {{ notice }}</div>
   </main>
 </template>
