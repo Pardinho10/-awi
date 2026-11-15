@@ -45,18 +45,21 @@ html[data-theme="light"] .hx-theme {
 
   /* --- Tinta ------------------------------------------------------------
      Índigo-negro, nunca #000. Los grises se construyen con alfa sobre el
-     ground: el compuesto efectivo se anota al lado. */
+     ground: el compuesto efectivo se anota al lado.
+     En claro la escala "quieta" se comprime (14.88 / 7.81 / 5.29) porque el
+     ground está cerca del techo de luminancia; la jerarquía fina la hacen el
+     tamaño, el peso y el tracking, no solo el color. */
   --hx-ink:         #14182B;                  /* 14.88:1 sobre void */
-  --hx-ink-mute:    rgba(20, 24, 43, 0.68);   /* #585C6C · 5.62:1 sobre void */
-  --hx-ink-faint:   rgba(20, 24, 43, 0.55);   /* #747786 · 3.76:1 → DECORATIVO */
-  --hx-ink-ghost:   rgba(20, 24, 43, 0.14);   /* #CBCED9 · 1.33:1 → solo anillos */
+  --hx-ink-mute:    rgba(20, 24, 43, 0.78);   /* #434757 · 7.81:1 sobre void · 7.27:1 sobre fila seleccionada */
+  --hx-ink-faint:   rgba(20, 24, 43, 0.66);   /* #5C6070 · 5.29:1 sobre void · 5.01:1 sobre fila seleccionada */
+  --hx-ink-ghost:   rgba(20, 24, 43, 0.14);   /* #CBCED9 · 1.33:1 → solo separadores y anillos */
 
   /* --- Solar (oro → ámbar profundo) -------------------------------------
      El oro brillante del tema oscuro da ~1.9:1 sobre claro y FALLA AA. En claro
      el token baja a ámbar profundo, que sirve como texto, borde y filete de
      foco. El oro brillante queda reservado a superficies oscuras. */
   --hx-solar:       #7A4A08;                  /* 6.33:1 sobre void · 6.79:1 sobre surface */
-  --hx-solar-hot:   #8F560A;                  /* 5.08:1 sobre void (hover de texto) */
+  --hx-solar-hot:   #8A5209;                  /* 5.40:1 sobre void · 4.81:1 sobre fila seleccionada */
   --hx-solar-deep:  #5A3705;                  /* 8.97:1 sobre void (énfasis) */
   --hx-solar-glow:  rgba(122, 74, 8, 0.18);   /* halo: en claro tiñe, no ilumina */
   --hx-solar-wash:  rgba(122, 74, 8, 0.08);   /* fondo de hover muy leve */
