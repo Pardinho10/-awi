@@ -15,6 +15,71 @@
 
 /* --- Activación del tema ------------------------------------------------- */
 
+
+/* ============================================================================
+   Puente con la paleta vieja
+   ----------------------------------------------------------------------------
+   styles.css sigue en el proyecto y define su propia paleta (Gruvbox) en
+   `:root` y en `:root[data-theme='light']`. Mientras exista, cualquier regla
+   suya que no hayamos reescrito pinta con esos colores y el tema claro queda
+   mitad Helios, mitad Gruvbox.
+
+   Acá se reasignan esos nombres a los tokens de Helios. No es una capa
+   definitiva: cuando styles.css desaparezca, este bloque se va con él.
+   ========================================================================== */
+
+body.hx-theme {
+  /* Superficies */
+  --bg-void: var(--hx-void);
+  --bg-panel: var(--hx-surface);
+  --bg-elevated: var(--hx-surface-2);
+  --bg-controls: var(--hx-void);
+  --bg-disabled: var(--hx-line);
+
+  /* Tinta */
+  --text-title: var(--hx-ink);
+  --text: var(--hx-ink);
+  --text-secondary: var(--hx-ink-mute);
+  --text-muted: var(--hx-ink-faint);
+  --label: var(--hx-ink-faint);
+
+  /* Bordes y acentos */
+  --border: var(--hx-line);
+  --interactive: var(--hx-solar);
+  --interactive-hover: var(--hx-solar-hot);
+  --interactive-border: var(--hx-line-hot);
+  --title-accent: var(--hx-solar);
+  --bar-accent: var(--hx-solar);
+  --icon-info: var(--hx-plasma);
+  --icon-success: var(--hx-plasma);
+  --star: var(--hx-solar);
+  --mars: var(--hx-solar-hot);
+  --danger: var(--hx-solar-deep);
+  --nebula: var(--hx-plasma);
+  --ice: var(--hx-plasma);
+  --aurora: var(--hx-plasma);
+  --success: var(--hx-plasma);
+
+  /* Estados */
+  --hover-bg: var(--hx-solar-wash);
+  --selected-bg: var(--hx-solar-wash);
+
+  /* El tema no admite radios ni sombras difusas. */
+  --radius: 0px;
+  --radius-sm: 0px;
+  --shadow: none;
+
+  /* Velo y rótulos sobre imagen: los del visor son fijos, no del tema. */
+  --overlay-img: color-mix(in srgb, var(--nawi-sky) 60%, transparent);
+  --overlay-img-strong: color-mix(in srgb, var(--nawi-sky) 82%, transparent);
+  --overlay-veil: color-mix(in srgb, var(--nawi-sky) 35%, transparent);
+  --overlay-text: var(--nawi-sky-ink);
+  --overlay-text-soft: var(--nawi-sky-ink-mute);
+  --overlay-accent: var(--hx-solar);
+  --overlay-line: var(--nawi-sky-line);
+  --overlay-marker: var(--hx-solar);
+}
+
 body.hx-theme {
   background: var(--hx-void);
   color: var(--hx-ink);
@@ -250,13 +315,11 @@ body.hx-theme::before {
   color: var(--hx-ink);
 }
 
-/* Una sola palabra en oro por titular. */
+/* Una sola palabra en oro por titular. En oro liso: el degradado con
+   background-clip es un recurso decorativo que no aporta nada y le quita
+   filo al contraste. */
 .hx-theme .intro-row h1 .hero-gild {
-  background: linear-gradient(100deg, var(--hx-solar) 0%, var(--hx-solar-hot) 55%, var(--hx-solar) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  color: var(--hx-solar);
 }
 
 .hx-theme .intro-copy {
@@ -376,8 +439,15 @@ body.hx-theme::before {
     gap: var(--hx-space-md);
   }
 
-  .hx-theme .mission-stat > div {
+  /* Sólo los bloques de cifras crecen. Sin el :not, la regla vertical también
+     recibía `flex: 1` y se estiraba a 188px: una barra rellena en medio del
+     hero en vez de un separador de 1px. */
+  .hx-theme .mission-stat > div:not(.stat-rule) {
     flex: 1 1 0;
+  }
+
+  .hx-theme .stat-rule {
+    flex: 0 0 1px;
   }
 }
 
@@ -658,7 +728,7 @@ body.hx-theme::before {
 .hx-theme .object-chevron {
   display: grid;
   place-items: center;
-  color: var(--hx-ink-ghost);
+  color: var(--hx-ink-faint);
   font-size: 11px;
   transition: color var(--hx-t-fast), transform var(--hx-t-fast);
 }
@@ -797,7 +867,7 @@ body.hx-theme::before {
   font-size: var(--hx-fs-micro);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
-  color: var(--hx-ink-ghost);
+  color: var(--hx-ink-faint);
 }
 
 /* --- Aviso del objeto -------------------------------------------------- */
@@ -882,7 +952,7 @@ body.hx-theme::before {
   font-size: var(--hx-fs-micro);
   line-height: 1.6;
   letter-spacing: 0.08em;
-  color: var(--hx-ink-faint);
+  color: var(--hx-ink-mute);
 }
 
 .hx-theme .below-viewer kbd {
@@ -950,6 +1020,12 @@ body.hx-theme::before {
 :root {
   --nawi-sky: #04050A;
   --nawi-sky-line: rgba(196, 208, 245, 0.18);
+  /* Tinta de los rótulos que se apoyan SOBRE el recorte. Son fijos, no del
+     tema: el visor es oscuro en ambos temas, así que la tinta de encima
+     tampoco puede cambiar o el texto desaparece en el tema claro. */
+  --nawi-sky-ink: #E8ECFB;
+  --nawi-sky-ink-mute: rgba(232, 236, 251, 0.62);
+  --nawi-sky-ink-faint: rgba(232, 236, 251, 0.42);
 }
 
 .hx-theme .sky-stage {
@@ -1033,7 +1109,7 @@ body.hx-theme::before {
   font-weight: 300;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--hx-ink);
+  color: var(--nawi-sky-ink);
 }
 
 .hx-theme .image-caption {
@@ -1043,7 +1119,7 @@ body.hx-theme::before {
   padding: 10px 14px;
   border-top: 1px solid var(--nawi-sky-line);
   border-right: 1px solid var(--nawi-sky-line);
-  color: var(--hx-ink-mute);
+  color: var(--nawi-sky-ink-mute);
 }
 
 .hx-theme .caption-dot {
@@ -1060,7 +1136,7 @@ body.hx-theme::before {
   padding: 10px 14px;
   border-bottom: 1px solid var(--nawi-sky-line);
   border-left: 1px solid var(--nawi-sky-line);
-  color: var(--hx-ink-mute);
+  color: var(--nawi-sky-ink-mute);
 }
 
 .hx-theme .coordinate-label i {
@@ -1068,7 +1144,7 @@ body.hx-theme::before {
 }
 
 .hx-theme .coordinate-label span {
-  color: var(--hx-ink-ghost);
+  color: var(--nawi-sky-ink-faint);
 }
 
 .hx-theme .image-date {
@@ -1089,7 +1165,7 @@ body.hx-theme::before {
   font-weight: 300;
   letter-spacing: 0.10em;
   font-variant-numeric: tabular-nums;
-  color: var(--hx-ink);
+  color: var(--nawi-sky-ink);
 }
 
 .hx-theme .image-date small {
@@ -1097,7 +1173,7 @@ body.hx-theme::before {
   font-size: var(--hx-fs-micro);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--hx-ink-faint);
+  color: var(--nawi-sky-ink-faint);
 }
 
 .hx-theme .frame-calidad {
@@ -1221,7 +1297,7 @@ body.hx-theme::before {
   font-weight: 300;
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
-  color: var(--hx-ink-ghost);
+  color: var(--hx-ink-faint);
   cursor: pointer;
   transition: color var(--hx-t-fast);
 }
@@ -1304,7 +1380,7 @@ body.hx-theme::before {
   font-size: var(--hx-fs-micro);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
-  color: var(--hx-ink-faint);
+  color: var(--hx-ink-mute);
 }
 
 .hx-theme .zoom-button,
@@ -1568,7 +1644,7 @@ body.hx-theme::before {
   font-size: var(--hx-fs-micro);
   line-height: 1.6;
   letter-spacing: 0.06em;
-  color: var(--hx-ink-ghost);
+  color: var(--hx-ink-faint);
   text-transform: none;
 }
 
@@ -1702,7 +1778,7 @@ body.hx-theme::before {
   font-size: var(--hx-fs-micro);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
-  color: var(--hx-ink-ghost);
+  color: var(--hx-ink-faint);
 }
 
 @media (max-width: 560px) {
