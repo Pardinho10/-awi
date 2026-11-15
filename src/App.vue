@@ -3,10 +3,12 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { DATA_SOURCE_INFO, catalog } from './data/catalog/index.js';
 import LatidoChart from './components/LatidoChart.vue';
 import RastroPanel from './components/RastroPanel.vue';
+import IconoNawi from './components/IconoNawi.vue';
 
 // Tema claro/oscuro: arranca según la preferencia del sistema y se recuerda en localStorage.
 const THEME_KEY = 'nawi-theme';
-const THEME_COLORS = { dark: '#1d2021', light: '#ebdbb2' };
+/* Coinciden con --hx-void de cada tema, para la barra del navegador móvil. */
+const THEME_COLORS = { dark: '#07080F', light: '#E9ECF5' };
 
 function readStoredTheme() {
   try {
@@ -383,47 +385,47 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 <template>
   <main class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="Ñawi, inicio"><span class="brand-mark"><i class="bi bi-eye-fill" /></span><span>ñawi<span class="brand-dot">.</span></span></a>
+      <a class="brand" href="#inicio" aria-label="Ñawi, inicio"><span class="brand-mark"><IconoNawi nombre="ojo"  /></span><span>ñawi<span class="brand-dot">.</span></span></a>
       <div class="mission-label"><span class="live-dot" /> EXPLORADOR INFRARROJO <span class="label-divider">/</span> SPHEREx</div>
       <div class="topbar-actions">
-        <button class="icon-button theme-button" :title="isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'" :aria-label="isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'" :aria-pressed="isLight" @click="toggleTheme"><i class="bi" :class="isLight ? 'bi-moon-stars' : 'bi-brightness-high'" /></button>
-        <button class="icon-button help-button" title="Acerca de Nawi" aria-label="Acerca de Nawi"><i class="bi bi-question-lg" /></button>
+        <button class="icon-button theme-button" :title="isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'" :aria-label="isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'" :aria-pressed="isLight" @click="toggleTheme"><IconoNawi :nombre="isLight ? 'luna' : 'sol'" /></button>
+        <button class="icon-button help-button" title="Acerca de Nawi" aria-label="Acerca de Nawi"><IconoNawi nombre="ayuda"  /></button>
       </div>
     </header>
 
     <section id="inicio" class="intro-row">
       <div><div class="eyebrow"><span>01</span> OBSERVATORIO DIGITAL</div><h1><span class="hero-line">El cielo cambia.</span><span class="hero-line">Ahora podés <span class="hero-gild">verlo.</span></span></h1><p class="intro-copy">Viajá a través de observaciones infrarrojas reales y seguí las huellas que dejan los objetos celestes.</p></div>
-      <div class="mission-stat"><span class="stat-icon"><i class="bi bi-stars" /></span><div><strong>102</strong><span>bandas infrarrojas</span></div><div class="stat-rule" /><div><strong>6 <small>meses</small></strong><span>entre mapeos del cielo</span></div></div>
+      <div class="mission-stat"><span class="stat-icon"><IconoNawi nombre="estrellas"  /></span><div><strong>102</strong><span>bandas infrarrojas</span></div><div class="stat-rule" /><div><strong>6 <small>meses</small></strong><span>entre mapeos del cielo</span></div></div>
     </section>
 
     <div class="workspace">
       <aside class="sidebar-col">
           <div class="sidebar panel">
             <div class="panel-heading"><div><span class="eyebrow">EXPLORAR</span><h2>Elegí un objeto</h2></div><span class="count-pill">{{ objects.length }}</span></div>
-            <label class="search-box"><i class="bi bi-search" /><input v-model="query" placeholder="Buscar objeto..." aria-label="Buscar objeto" /><kbd>/</kbd></label>
+            <label class="search-box"><IconoNawi nombre="buscar"  /><input v-model="query" placeholder="Buscar objeto..." aria-label="Buscar objeto" /><kbd>/</kbd></label>
             <div class="object-list" role="listbox" aria-label="Objetos astronómicos">
               <button v-for="(object, index) in filteredObjects" :key="object.id" class="object-option" :class="{ selected: object.id === objectId }" role="option" :aria-selected="object.id === objectId" @click="chooseObject(object.id)">
-                <span class="object-index" :class="{ active: object.id === objectId }">{{ String(index + 1).padStart(2, '0') }}</span><span class="object-copy"><strong>{{ object.name }}</strong><small>{{ object.kind }}</small></span><span class="object-chevron"><i class="bi bi-arrow-up-right" /></span>
+                <span class="object-index" :class="{ active: object.id === objectId }">{{ String(index + 1).padStart(2, '0') }}</span><span class="object-copy"><strong>{{ object.name }}</strong><small>{{ object.kind }}</small></span><span class="object-chevron"><IconoNawi nombre="flecha-externa"  /></span>
               </button>
               <div v-if="loading" class="empty-search">Cargando catálogo…</div>
               <div v-else-if="loadError" class="empty-search">{{ loadError }}</div>
               <div v-else-if="!filteredObjects.length" class="empty-search">No hay objetos con ese nombre.</div>
             </div>
-            <div class="sidebar-bottom"><span class="status-check"><i class="bi bi-check2" /></span><span>{{ sourceCopy.title }}<br /><small>{{ dataSourceNote }}</small></span></div>
+            <div class="sidebar-bottom"><span class="status-check"><IconoNawi nombre="check"  /></span><span>{{ sourceCopy.title }}<br /><small>{{ dataSourceNote }}</small></span></div>
           </div>
         </aside>
 
         <section class="viewer-column">
           <div v-if="ready" class="viewer panel">
-            <div class="viewer-toolbar"><div><span class="eyebrow">CAMPO CELESTE <span class="toolbar-slash">/</span> {{ selectedObject.tag }}</span><h2>{{ selectedObject.name }}</h2></div><button class="share-button" @click="shareView"><i class="bi bi-share" /><span>Compartir vista</span></button></div>
+            <div class="viewer-toolbar"><div><span class="eyebrow">CAMPO CELESTE <span class="toolbar-slash">/</span> {{ selectedObject.tag }}</span><h2>{{ selectedObject.name }}</h2></div><button class="share-button" @click="shareView"><IconoNawi nombre="compartir"  /><span>Compartir vista</span></button></div>
             <div v-if="fichaTecnica.length" class="viewer-meta" aria-label="Metadatos del recorte">
-              <span v-for="chip in fichaTecnica" :key="chip" class="meta-chip"><i class="bi bi-rulers" /> {{ chip }}</span>
-              <span v-if="marcadorReal" class="meta-chip"><i class="bi bi-crosshair2" /> cruz: posición esperada</span>
-              <span v-if="trayectoria" class="meta-chip"><i class="bi bi-slash-lg" /> trayectoria: primer → último cuadro</span>
+              <span v-for="chip in fichaTecnica" :key="chip" class="meta-chip"><IconoNawi nombre="regla"  /> {{ chip }}</span>
+              <span v-if="marcadorReal" class="meta-chip"><IconoNawi nombre="mira"  /> cruz: posición esperada</span>
+              <span v-if="trayectoria" class="meta-chip"><IconoNawi nombre="diagonal"  /> trayectoria: primer → último cuadro</span>
               <span class="meta-origen">según los datos de la misión</span>
             </div>
             <div v-if="motivoConCuadros" class="viewer-aviso" role="note">
-              <i class="bi bi-exclamation-triangle" aria-hidden="true" />
+              <IconoNawi nombre="alerta" aria-hidden="true"  />
               <div class="viewer-aviso-copy">
                 <span class="viewer-aviso-label">Advertencia</span>
                 <p class="viewer-aviso-texto">{{ motivoConCuadros }}</p>
@@ -444,27 +446,27 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
               <div class="sky-vignette" />
               <div class="sky-grid" />
               <div class="image-caption"><span class="caption-dot" /> {{ frame.illustrative ? 'IMAGEN ILUSTRATIVA · DATOS REALES PENDIENTES' : 'DATOS REALES' }}</div>
-              <div v-if="selectedObject.coordinates" class="coordinate-label" :title="selectedObject.coordinates.note"><i class="bi bi-exclamation-triangle" /> {{ selectedObject.coordinates.ra }} <span>/</span> {{ selectedObject.coordinates.dec }} · {{ selectedObject.coordinates.statusLabel }}</div>
-              <div v-else class="coordinate-label"><i class="bi bi-hourglass-split" /> COORDENADAS PENDIENTES <span>/</span> NO VALIDADAS</div>
+              <div v-if="selectedObject.coordinates" class="coordinate-label" :title="selectedObject.coordinates.note"><IconoNawi nombre="alerta"  /> {{ selectedObject.coordinates.ra }} <span>/</span> {{ selectedObject.coordinates.dec }} · {{ selectedObject.coordinates.statusLabel }}</div>
+              <div v-else class="coordinate-label"><IconoNawi nombre="espera"  /> COORDENADAS PENDIENTES <span>/</span> NO VALIDADAS</div>
               <template v-if="frame.illustrative">
                 <div class="target-marker"><span /><i /></div>
                 <div class="target-label">OBJETO SELECCIONADO</div>
               </template>
               <div v-if="compare" class="compare-wipe" :class="{ 'is-real': !previousFrame.illustrative }" :style="previousFrame.illustrative ? { backgroundImage: `url(${previousFrame.url})` } : null"><img v-if="!previousFrame.illustrative" class="pixel-frame" :src="previousFrame.url" alt="" /><span class="wipe-label">ANTERIOR · {{ previousFrame.date }}{{ previousFrame.illustrative ? ' · ILUSTRATIVO' : '' }}</span><span class="wipe-line" /></div>
-              <div v-if="!frame.illustrative && suavizado" class="escala-aviso"><i class="bi bi-water" /> interpolado · no son píxeles originales</div>
+              <div v-if="!frame.illustrative && suavizado" class="escala-aviso"><IconoNawi nombre="agua"  /> interpolado · no son píxeles originales</div>
               <div class="image-date"><span>{{ frame.date }}</span><small>{{ frame.band }}</small><small v-if="frame.calidadOk === false" class="frame-calidad">calidad marcada como dudosa</small></div>
             </div>
             <div class="timeline">
-              <div class="timeline-top"><span class="timeline-title"><i class="bi bi-clock-history" /> {{ hayCuadrosReales ? 'LÍNEA DE TIEMPO' : 'LÍNEA DE TIEMPO ILUSTRATIVA' }}</span><span class="frame-counter">CUADRO <b>{{ String(frameIndex + 1).padStart(2, '0') }}</b> <span>/ {{ String(frames.length).padStart(2, '0') }}</span></span></div>
+              <div class="timeline-top"><span class="timeline-title"><IconoNawi nombre="historial"  /> {{ hayCuadrosReales ? 'LÍNEA DE TIEMPO' : 'LÍNEA DE TIEMPO ILUSTRATIVA' }}</span><span class="frame-counter">CUADRO <b>{{ String(frameIndex + 1).padStart(2, '0') }}</b> <span>/ {{ String(frames.length).padStart(2, '0') }}</span></span></div>
               <input v-model.number="frameIndex" class="time-range" :style="{ '--progress': `${progressPercent}%` }" type="range" min="0" :max="frames.length - 1" step="1" aria-label="Elegir cuadro" />
               <div class="timeline-dates"><button v-for="(item, index) in frames" :key="item.date" class="date-tick" :class="{ current: index === frameIndex }" @click="frameIndex = index">{{ item.date.slice(5) }}</button></div>
             </div>
-            <div class="player-controls"><div class="transport"><button class="control-button" aria-label="Cuadro anterior" @click="frameIndex = (frameIndex - 1 + frames.length) % frames.length"><i class="bi bi-skip-backward-fill" /></button><button class="play-button" :aria-label="playing ? 'Pausar' : 'Reproducir'" @click="playing = !playing"><i class="bi" :class="playing ? 'bi-pause-fill' : 'bi-play-fill'" /></button><button class="control-button" aria-label="Cuadro siguiente" @click="frameIndex = (frameIndex + 1) % frames.length"><i class="bi bi-skip-forward-fill" /></button><span class="play-caption">{{ playing ? 'REPRODUCIENDO' : 'RECORRER CUADROS' }}</span></div><div v-if="!frame.illustrative" class="zoom-controls" role="group" aria-label="Zoom del recorte y método de escalado"><span class="zoom-title" aria-hidden="true"><i class="bi bi-arrows-angle-expand" /> zoom</span><button v-for="escala in ZOOMS" :key="escala" type="button" class="zoom-button" :class="{ 'is-active': zoomActivo === escala }" :aria-pressed="zoomActivo === escala" :aria-label="`Escala ${escala}x: recorte a ${TAMANO_RECORTE_PX * escala} píxeles`" :title="`${escala}x · ${TAMANO_RECORTE_PX * escala} px`" @click="zoom = escala">{{ escala }}x</button><button type="button" class="zoom-mode" :class="{ 'is-suave': suavizado }" :aria-pressed="suavizado" :aria-label="suavizado ? 'Modo suavizado activo: la imagen está interpolada y no muestra los píxeles originales. Cambiar a píxel real.' : 'Modo píxel real activo. Cambiar a suavizado, que interpola la imagen.'" :title="suavizado ? 'Interpolado: no son los píxeles originales' : 'Píxeles originales del recorte, sin interpolar'" @click="suavizado = !suavizado"><i class="bi" :class="suavizado ? 'bi-water' : 'bi-grid-3x3-gap-fill'" /><span>{{ suavizado ? 'suavizado' : 'píxel real' }}</span></button></div><button class="compare-button" :class="{ 'is-on': compare }" @click="compare = !compare"><i class="bi bi-layout-split" /> <span>{{ compare ? 'Cerrar comparación' : 'Antes y después' }}</span></button></div>
+            <div class="player-controls"><div class="transport"><button class="control-button" aria-label="Cuadro anterior" @click="frameIndex = (frameIndex - 1 + frames.length) % frames.length"><IconoNawi nombre="anterior"  /></button><button class="play-button" :aria-label="playing ? 'Pausar' : 'Reproducir'" @click="playing = !playing"><IconoNawi :nombre="playing ? 'pausa' : 'reproducir'" /></button><button class="control-button" aria-label="Cuadro siguiente" @click="frameIndex = (frameIndex + 1) % frames.length"><IconoNawi nombre="siguiente"  /></button><span class="play-caption">{{ playing ? 'REPRODUCIENDO' : 'RECORRER CUADROS' }}</span></div><div v-if="!frame.illustrative" class="zoom-controls" role="group" aria-label="Zoom del recorte y método de escalado"><span class="zoom-title" aria-hidden="true"><IconoNawi nombre="zoom"  /> zoom</span><button v-for="escala in ZOOMS" :key="escala" type="button" class="zoom-button" :class="{ 'is-active': zoomActivo === escala }" :aria-pressed="zoomActivo === escala" :aria-label="`Escala ${escala}x: recorte a ${TAMANO_RECORTE_PX * escala} píxeles`" :title="`${escala}x · ${TAMANO_RECORTE_PX * escala} px`" @click="zoom = escala">{{ escala }}x</button><button type="button" class="zoom-mode" :class="{ 'is-suave': suavizado }" :aria-pressed="suavizado" :aria-label="suavizado ? 'Modo suavizado activo: la imagen está interpolada y no muestra los píxeles originales. Cambiar a píxel real.' : 'Modo píxel real activo. Cambiar a suavizado, que interpola la imagen.'" :title="suavizado ? 'Interpolado: no son los píxeles originales' : 'Píxeles originales del recorte, sin interpolar'" @click="suavizado = !suavizado"><IconoNawi :nombre="suavizado ? 'agua' : 'pixel'" /><span>{{ suavizado ? 'suavizado' : 'píxel real' }}</span></button></div><button class="compare-button" :class="{ 'is-on': compare }" @click="compare = !compare"><IconoNawi nombre="comparar"  /> <span>{{ compare ? 'Cerrar comparación' : 'Antes y después' }}</span></button></div>
           </div>
           <div v-else-if="sinCuadros" class="viewer panel">
-            <div class="viewer-toolbar"><div><span class="eyebrow">CAMPO CELESTE <span class="toolbar-slash">/</span> {{ selectedObject.tag }}</span><h2>{{ selectedObject.name }}</h2></div><button class="share-button" @click="shareView"><i class="bi bi-share" /><span>Compartir vista</span></button></div>
+            <div class="viewer-toolbar"><div><span class="eyebrow">CAMPO CELESTE <span class="toolbar-slash">/</span> {{ selectedObject.tag }}</span><h2>{{ selectedObject.name }}</h2></div><button class="share-button" @click="shareView"><IconoNawi nombre="compartir"  /><span>Compartir vista</span></button></div>
             <div class="viewer-empty">
-              <span class="viewer-empty-icon"><i class="bi bi-camera-video-off" /></span>
+              <span class="viewer-empty-icon"><IconoNawi nombre="sin-camara"  /></span>
               <div>
                 <h3>{{ tituloSinCuadros }}</h3>
                 <p v-if="motivoSinCuadros" class="viewer-empty-motivo">Motivo informado: {{ motivoSinCuadros }}</p>
@@ -483,11 +485,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
             <p class="latido-intro">{{ latido.puntos.length }} mediciones de brillo por fecha, tal como las entrega la misión. Nawi no recalcula ni corrige estos valores.</p>
             <LatidoChart :puntos="latido.puntos" :nombre="selectedObject.name" :motivo="latido.motivo" :cargando="latido.estado === 'loading'" />
           </section>
-          <div class="below-viewer"><span><i class="bi bi-info-circle" /> {{ ready ? selectedObject.demoUse : 'Esta experiencia está en desarrollo.' }} <span class="caption-divider">·</span> {{ dataSourceNote }}</span><span class="keyboard-hint">NAVEGÁ CON <kbd>←</kbd> <kbd>→</kbd></span></div>
+          <div class="below-viewer"><span><IconoNawi nombre="info"  /> {{ ready ? selectedObject.demoUse : 'Esta experiencia está en desarrollo.' }} <span class="caption-divider">·</span> {{ dataSourceNote }}</span><span class="keyboard-hint">NAVEGÁ CON <kbd>←</kbd> <kbd>→</kbd></span></div>
       </section>
     </div>
 
-    <footer class="footer"><span>ÑAWI <span class="footer-dot">·</span> UN OJO INFRARROJO PARA TODOS</span><span>DATOS DE MISIÓN SPHEREx <i class="bi bi-arrow-up-right" /></span></footer>
-    <div v-if="notice" class="toast-note" role="status"><i class="bi bi-check-circle-fill" /> {{ notice }}</div>
+    <footer class="footer"><span>ÑAWI <span class="footer-dot">·</span> UN OJO INFRARROJO PARA TODOS</span><span>DATOS DE MISIÓN SPHEREx <IconoNawi nombre="flecha-externa"  /></span></footer>
+    <div v-if="notice" class="toast-note" role="status"><IconoNawi nombre="check-circulo"  /> {{ notice }}</div>
   </main>
 </template>

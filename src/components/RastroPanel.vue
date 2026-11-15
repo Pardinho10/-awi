@@ -68,6 +68,7 @@ const fechas = computed(() => {
   if (d.inicio && d.fin) return `${d.inicio} → ${d.fin}`;
   return d.inicio || d.fin || '';
 });
+import IconoNawi from './IconoNawi.vue';
 </script>
 
 <template>
@@ -112,7 +113,7 @@ const fechas = computed(() => {
     </dl>
 
     <p v-if="comparacion" class="rastro-validacion" :class="{ 'is-ok': comparacion.dentro === true, 'is-off': comparacion.dentro === false }" role="note">
-      <i class="bi" :class="comparacion.dentro === false ? 'bi-exclamation-triangle' : 'bi-check2-circle'" aria-hidden="true" />
+      <IconoNawi :nombre="comparacion.dentro === false ? 'alerta' : 'check-circulo'" />
       <span v-if="comparacion.dentro === true">
         La medición cae dentro de la incertidumbre del valor publicado (diferencia
         {{ formatear(comparacion.diferencia) }}″/año, incertidumbre ±{{ formatear(datos.incertidumbre) }}″):

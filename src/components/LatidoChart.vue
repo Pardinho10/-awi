@@ -278,17 +278,18 @@ const pie = computed(() => {
 });
 
 const hayLambda = computed(() => puntosValidos.value.some((p) => p.lambda !== null));
+import IconoNawi from './IconoNawi.vue';
 </script>
 
 <template>
   <div class="latido-chart">
     <div v-if="cargando" class="latido-estado" role="status">
-      <i class="bi bi-hourglass-split" />
+      <IconoNawi nombre="espera"  />
       <p>Cargando el latido…</p>
     </div>
 
     <div v-else-if="!puntosValidos.length" class="latido-estado latido-vacio">
-      <i class="bi bi-activity" />
+      <IconoNawi nombre="pulso"  />
       <div>
         <strong>Sin datos de brillo todavía</strong>
         <p v-if="motivo">Motivo informado: {{ motivo }}</p>
