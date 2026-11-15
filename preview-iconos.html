@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IconoNawi · prueba temporal</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: ui-monospace, 'JetBrains Mono', monospace; }
+      main { padding: 24px; display: grid; gap: 24px; }
+      .panel { padding: 18px 22px 22px; }
+      .oscuro { background: #07080F; color: #E8E6E1; }
+      .claro { background: #F1F2F7; color: #16181F; }
+      h2 { margin: 0 0 14px; font: 400 12px/1.4 ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
+      .fila { display: grid; grid-template-columns: 140px repeat(3, 56px 34px); align-items: center; min-height: 46px; border-top: 1px solid currentColor; border-color: color-mix(in srgb, currentColor 22%, transparent); }
+      .fila.cabecera { min-height: 24px; font-size: 10px; opacity: .55; border-top: 0; }
+      .nom { font-size: 12px; letter-spacing: .04em; }
+      .celda { display: grid; place-items: center; }
+      .px { font-size: 9px; opacity: .5; letter-spacing: .08em; }
+      .muestra { display: flex; align-items: center; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, currentColor 22%, transparent); font-size: 11px; }
+      .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border: 1px solid currentColor; background: transparent; color: inherit; font: 400 11px ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+      .btn.suave { opacity: .8; }
+      .btn.chico { padding: 7px 9px; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./preview-iconos.js"></script>
+  </body>
+</html>

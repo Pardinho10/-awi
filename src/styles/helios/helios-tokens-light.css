@@ -1,0 +1,120 @@
+/* ============================================================================
+   HELIOS — paleta CLARA (derivada, no oficial)
+   ----------------------------------------------------------------------------
+   Helios es de un solo mundo (fondo índigo-negro). Este archivo deriva la
+   variante clara SIN tocar los tokens originales: solo redefine los 19 tokens
+   de color dentro de la zona `.hx-theme`, y únicamente cuando el documento está
+   en modo claro.
+
+   Activación (el mecanismo que ya usa Nawi):
+     - index.html / App.vue ponen  <html data-theme="light">  (lo mismo que lee
+       styles.css con :root[data-theme='light']).
+     - La zona Helios es cualquier elemento con la clase `hx-theme`.
+
+   Selector: html[data-theme="light"] .hx-theme
+   Especificidad (0,2,1) > `:root` (0,1,0) de helios-tokens.css, así que gana
+   sin depender del orden de importación. Aun así, este archivo debe importarse
+   DESPUÉS de helios-base.css porque incluye unos parches de base al final
+   (valores rgba fijos de helios-base.css que no son tokens).
+
+   Reglas de la derivación:
+     - Sin blanco puro: el ground es #E9ECF5 (índigo muy leve), no #FFF/#FEFEFE.
+     - Sin negro puro: la tinta es #14182B, no #000.
+     - La estructura sigue siendo de hairlines de 1px, visibles pero discretos
+       (se calibraron contra la fuerza real de los hairlines del tema oscuro).
+     - Tipografía, movimiento y layout NO se tocan: no aparecen en este archivo.
+
+   Contraste: todos los ratios anotados abajo están medidos con la fórmula WCAG
+   de luminancia relativa (no estimados). Detalle y decisiones en
+   doc/paleta-clara-helios.md.
+   ========================================================================== */
+
+html[data-theme="light"] .hx-theme {
+  /* Controles nativos (scrollbars, inputs) acordes al tema claro. */
+  color-scheme: light;
+
+  /* --- Superficies -------------------------------------------------------
+     Tres pasos de ground frío. `void-deep` INVIRTIENE su rol: en Helios su
+     único uso es ser el color del texto sobre oro (::selection y
+     .hx-btn--solar), así que en claro es un casi-blanco frío, no el ground más
+     oscuro. Ver "compromisos" en doc/paleta-clara-helios.md. */
+  --hx-void:        #E9ECF5;   /* ground de la página */
+  --hx-void-deep:   #F5F7FD;   /* texto sobre relleno ámbar (6.98:1 sobre solar) */
+  --hx-surface:     #F1F4FB;   /* superficie elevada */
+  --hx-surface-2:   #F7F9FE;   /* superficie más elevada */
+
+  /* --- Tinta ------------------------------------------------------------
+     Índigo-negro, nunca #000. Los grises se construyen con alfa sobre el
+     ground: el compuesto efectivo se anota al lado. */
+  --hx-ink:         #14182B;                  /* 14.88:1 sobre void */
+  --hx-ink-mute:    rgba(20, 24, 43, 0.68);   /* #585C6C · 5.62:1 sobre void */
+  --hx-ink-faint:   rgba(20, 24, 43, 0.55);   /* #747786 · 3.76:1 → DECORATIVO */
+  --hx-ink-ghost:   rgba(20, 24, 43, 0.14);   /* #CBCED9 · 1.33:1 → solo anillos */
+
+  /* --- Solar (oro → ámbar profundo) -------------------------------------
+     El oro brillante del tema oscuro da ~1.9:1 sobre claro y FALLA AA. En claro
+     el token baja a ámbar profundo, que sirve como texto, borde y filete de
+     foco. El oro brillante queda reservado a superficies oscuras. */
+  --hx-solar:       #7A4A08;                  /* 6.33:1 sobre void · 6.79:1 sobre surface */
+  --hx-solar-hot:   #8F560A;                  /* 5.08:1 sobre void (hover de texto) */
+  --hx-solar-deep:  #5A3705;                  /* 8.97:1 sobre void (énfasis) */
+  --hx-solar-glow:  rgba(122, 74, 8, 0.18);   /* halo: en claro tiñe, no ilumina */
+  --hx-solar-wash:  rgba(122, 74, 8, 0.08);   /* fondo de hover muy leve */
+
+  /* --- Plasma (azul → azul profundo) ------------------------------------ */
+  --hx-plasma:      #1B5E9E;                  /* 5.66:1 sobre void · 6.07:1 sobre surface */
+  --hx-plasma-glow: rgba(27, 94, 158, 0.22);  /* halo del punto frío */
+
+  /* --- Hairlines --------------------------------------------------------
+     Calibrados contra el tema oscuro, donde `line` rinde 1.36:1 sobre su void.
+     En claro se usa un poco más de fuerza (1.51:1) porque el ojo necesita más
+     separación sobre fondos luminosos. Ninguno pretende 3:1: son separadores
+     decorativos de 1px, no bordes de control. */
+  --hx-line:        rgba(20, 24, 43, 0.20);   /* #BEC2CD · 1.51:1 sobre void */
+  --hx-line-soft:   rgba(20, 24, 43, 0.14);   /* #CBCED9 · 1.33:1 sobre void */
+  --hx-line-faint:  rgba(20, 24, 43, 0.10);   /* #D4D7E1 · 1.22:1 sobre void */
+  --hx-line-hot:    rgba(122, 74, 8, 0.42);   /* #BAA891 · 1.95:1, filete cálido de hover */
+}
+
+/* ============================================================================
+   PARCHES DE BASE (solo modo claro)
+   helios-base.css tiene siete valores de color escritos a mano que no pasan
+   por tokens. Sin estos parches quedarían ilegibles o fuera de mundo en claro
+   (texto casi blanco sobre fondo claro, nav negra, halos blancos). No se edita
+   helios-base.css: se sobreescribe acá, con los mismos selectores.
+   ========================================================================== */
+
+/* 1. Velo del escenario: el azul hardcodeado se cambia por el plasma del tema. */
+html[data-theme="light"] .hx-theme::before {
+  background:
+    radial-gradient(120% 85% at 50% 0%, var(--hx-solar-wash), transparent 62%),
+    radial-gradient(95% 75% at 50% 105%, rgba(27, 94, 158, 0.05), transparent 66%);
+}
+
+/* 2. `.hx-panel > p:first-child` usa blanco al 72%: en claro pasa a tinta al 78% (8.41:1). */
+html[data-theme="light"] .hx-theme .hx-panel > p:first-child {
+  color: rgba(20, 24, 43, 0.78);
+}
+
+/* 3. El halo del punto "ink" era blanco: en claro tiene que oscurecer. */
+html[data-theme="light"] .hx-theme .hx-light--ink {
+  box-shadow: 0 0 15px 6px rgba(20, 24, 43, 0.14);
+}
+
+/* 4. Anillo del cursor: el oro se cambia por ámbar profundo. */
+html[data-theme="light"] .hx-theme .hx-cursor-ring {
+  border-color: rgba(90, 55, 5, 0.45);
+}
+
+html[data-theme="light"] .hx-theme.hx-cursor-hover .hx-cursor-ring {
+  border-color: rgba(90, 55, 5, 0.85);
+}
+
+/* 5. Nav: estaba construida sobre negro translúcido. En claro, sobre el ground. */
+html[data-theme="light"] .hx-nav {
+  background: linear-gradient(to bottom, rgba(233, 236, 245, 0.92), transparent);
+}
+
+html[data-theme="light"] .hx-nav.hx-is-scrolled {
+  background: rgba(233, 236, 245, 0.94);
+}

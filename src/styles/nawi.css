@@ -201,11 +201,13 @@ body.hx-theme::before {
 /* El halo solar del tema, contenido en el hero. */
 .hx-theme .intro-row::before {
   content: "";
+  /* `inset: 0` con un degradado que se apaga antes de tocar el borde. Si el
+     halo se sale del bloque hay que recortarlo, y el recorte deja una costura
+     vertical visible en los bordes del hero. */
   position: absolute;
-  inset: -40% -10% auto -10%;
-  height: 130%;
+  inset: 0;
   pointer-events: none;
-  background: radial-gradient(60% 60% at 22% 40%, var(--hx-solar-wash), transparent 70%);
+  background: radial-gradient(46% 72% at 16% 58%, var(--hx-solar-wash), transparent 70%);
 }
 
 .hx-theme .intro-row > * {
@@ -362,10 +364,16 @@ body.hx-theme::before {
 
   .hx-theme .mission-stat {
     padding-left: 0;
-    padding-top: var(--hx-space-md);
+    padding-top: var(--hx-space-sm);
     border-left: 0;
     border-top: 1px solid var(--hx-line-soft);
     width: 100%;
+  }
+
+  /* En columna, el aire de escritorio entre el texto y las cifras se vuelve
+     un hueco: se aprieta. */
+  .hx-theme .intro-row {
+    gap: var(--hx-space-md);
   }
 
   .hx-theme .mission-stat > div {
@@ -415,5 +423,517 @@ body.hx-theme::before {
 @media (prefers-reduced-motion: reduce) {
   .hx-theme .live-dot {
     animation: none;
+  }
+}
+
+/* ============================================================================
+   Fase 2 — Workspace, paneles y sidebar
+   ========================================================================== */
+
+/* Grilla propia. Antes venía de Bootstrap (container-fluid / row / col-lg-3):
+   dos columnas y nada más. */
+.hx-theme .workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 292px) minmax(0, 1fr);
+  gap: var(--hx-space-md);
+  align-items: start;
+  width: 100%;
+  margin-top: var(--hx-space-md);
+  padding: 0;
+}
+
+/* --- Panel: hairline, radio 0, sin relleno ni sombra -------------------- */
+
+.hx-theme .panel {
+  background: transparent;
+  border: 1px solid var(--hx-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.hx-theme .sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: var(--hx-space-sm);
+  background: none;
+}
+
+/* --- Cabecera del panel ------------------------------------------------- */
+
+.hx-theme .panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--hx-space-sm);
+  padding: 0 0 var(--hx-space-sm);
+  border-bottom: 1px solid var(--hx-line-soft);
+}
+
+.hx-theme .panel-heading h2,
+.hx-theme .viewer-toolbar h2 {
+  margin-top: 8px;
+  font-family: var(--hx-font-display);
+  font-size: 1.05rem;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: var(--hx-track-heading);
+  text-transform: uppercase;
+  color: var(--hx-ink);
+}
+
+.hx-theme .panel-heading .eyebrow {
+  color: var(--hx-solar);
+}
+
+/* El contador es una cifra, no una etiqueta: mono, tabular, en un aro fino. */
+.hx-theme .count-pill {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid var(--hx-line);
+  border-radius: 50%;
+  background: transparent;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--hx-ink-mute);
+}
+
+/* --- Buscador: deja de ser una caja ------------------------------------ */
+
+.hx-theme .search-box {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: var(--hx-space-sm);
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--hx-line);
+  border-radius: 0;
+  background: none;
+  color: var(--hx-ink-faint);
+  transition: border-color var(--hx-t-fast);
+}
+
+.hx-theme .search-box:focus-within {
+  border-bottom-color: var(--hx-solar);
+  border-color: var(--hx-solar);
+}
+
+.hx-theme .search-box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: var(--hx-ink);
+  font-family: var(--hx-font-display);
+  font-size: var(--hx-fs-small);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  outline: none;
+}
+
+.hx-theme .search-box input::placeholder {
+  color: var(--hx-ink-faint);
+  font-weight: 300;
+}
+
+.hx-theme .search-box kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--hx-line);
+  border-radius: 0;
+  background: none;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  color: var(--hx-ink-faint);
+}
+
+/* --- Lista de objetos -------------------------------------------------- */
+
+.hx-theme .object-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--hx-space-sm);
+  /* Sin esto, en móvil la lista se iba a scroll horizontal. */
+  overflow-x: hidden;
+}
+
+.hx-theme .object-option {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 13px 8px 13px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--hx-line-soft);
+  border-radius: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--hx-t-fast);
+}
+
+/* La marca de selección es una hairline solar a la izquierda, no un relleno. */
+.hx-theme .object-option::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--hx-solar);
+  opacity: 0;
+  transition: opacity var(--hx-t-fast);
+}
+
+.hx-theme .object-option:hover {
+  background: var(--hx-solar-wash);
+}
+
+.hx-theme .object-option:hover::before,
+.hx-theme .object-option.selected::before {
+  opacity: 1;
+}
+
+.hx-theme .object-option.selected {
+  background: var(--hx-solar-wash);
+  /* La hoja vieja marcaba la selección con una barra de 3px (box-shadow inset).
+     Helios no admite nada más grueso que una hairline: la marca es el ::before
+     de 1px de arriba. */
+  box-shadow: none;
+  color: var(--hx-ink);
+}
+
+.hx-theme .object-index {
+  width: auto;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .object-index.active {
+  color: var(--hx-solar);
+}
+
+.hx-theme .object-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hx-theme .object-copy strong {
+  font-family: var(--hx-font-display);
+  font-size: var(--hx-fs-small);
+  font-weight: 300;
+  line-height: 1.25;
+  letter-spacing: 0.015em;
+  color: var(--hx-ink);
+}
+
+.hx-theme .object-copy small {
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+  /* La hoja vieja cortaba con puntos suspensivos: "ESTRELLA DE ALTO MOVIMIE…".
+     En una lista de cinco objetos se puede permitir la segunda línea. */
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.hx-theme .object-chevron {
+  display: grid;
+  place-items: center;
+  color: var(--hx-ink-ghost);
+  font-size: 11px;
+  transition: color var(--hx-t-fast), transform var(--hx-t-fast);
+}
+
+.hx-theme .object-option:hover .object-chevron,
+.hx-theme .object-option.selected .object-chevron {
+  color: var(--hx-solar);
+}
+
+.hx-theme .empty-search {
+  padding: var(--hx-space-sm) 8px;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+/* --- Pie de la sidebar ------------------------------------------------- */
+
+.hx-theme .sidebar-bottom {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: var(--hx-space-sm);
+  padding-top: var(--hx-space-sm);
+  border-top: 1px solid var(--hx-line-soft);
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .sidebar-bottom small {
+  font-size: var(--hx-fs-micro);
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .status-check {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  border: 1px solid var(--hx-line);
+  border-radius: 50%;
+  color: var(--hx-solar);
+  font-size: 9px;
+}
+
+/* --- Toolbar del visor ------------------------------------------------- */
+
+.hx-theme .viewer-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--hx-space-sm);
+  padding: var(--hx-space-sm) var(--hx-pad-sm);
+  border-bottom: 1px solid var(--hx-line-soft);
+}
+
+.hx-theme .viewer-toolbar .eyebrow {
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .toolbar-slash {
+  color: var(--hx-ink-ghost);
+}
+
+/* Botón fantasma en píldora: el único sitio con radio grande. */
+.hx-theme .share-button {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid var(--hx-line);
+  border-radius: 500px;
+  background: none;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-ink-mute);
+  cursor: pointer;
+  transition: border-color var(--hx-t-fast), color var(--hx-t-fast);
+}
+
+.hx-theme .share-button:hover {
+  border-color: var(--hx-solar);
+  color: var(--hx-solar);
+  background: none;
+}
+
+/* --- Chips de metadatos ------------------------------------------------ */
+
+.hx-theme .viewer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px var(--hx-pad-sm);
+  border-bottom: 1px solid var(--hx-line-soft);
+}
+
+.hx-theme .meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border: 1px solid var(--hx-line);
+  border-radius: 500px;
+  background: none;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .meta-chip i {
+  color: var(--hx-plasma);
+  font-size: 10px;
+}
+
+.hx-theme .meta-origen {
+  /* Ocupa su propia línea: al acomodarse los chips quedaba apretada contra el
+     último y parecía parte de él. */
+  flex: 0 0 100%;
+  margin: 2px 0 0;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-ink-ghost);
+}
+
+/* --- Aviso del objeto -------------------------------------------------- */
+
+.hx-theme .viewer-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px var(--hx-pad-sm);
+  border: 0;
+  border-bottom: 1px solid var(--hx-line-soft);
+  border-left: 1px solid var(--hx-solar);
+  background: var(--hx-solar-wash);
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .viewer-aviso > i {
+  margin-top: 2px;
+  color: var(--hx-solar);
+  font-size: 12px;
+}
+
+.hx-theme .viewer-aviso-label {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-solar);
+}
+
+.hx-theme .viewer-aviso-texto {
+  font-family: var(--hx-font-display);
+  font-size: var(--hx-fs-small);
+  font-weight: 300;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--hx-ink-mute);
+}
+
+/* --- Estado vacío ------------------------------------------------------ */
+
+.hx-theme .viewer-empty {
+  padding: var(--hx-space-lg) var(--hx-pad-sm);
+}
+
+.hx-theme .viewer-empty-icon {
+  border: 1px solid var(--hx-line);
+  color: var(--hx-ink-faint);
+  background: none;
+}
+
+.hx-theme .viewer-empty h3 {
+  font-size: var(--hx-fs-h3);
+  font-weight: 200;
+  letter-spacing: var(--hx-track-heading);
+  text-transform: uppercase;
+}
+
+.hx-theme .viewer-empty-chip {
+  border: 1px solid var(--hx-line);
+  border-radius: 500px;
+  background: none;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--hx-ink-faint);
+}
+
+/* --- Pie bajo el visor ------------------------------------------------- */
+
+.hx-theme .below-viewer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hx-space-sm);
+  padding: var(--hx-space-sm) 2px;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+  color: var(--hx-ink-faint);
+}
+
+.hx-theme .below-viewer kbd {
+  padding: 1px 5px;
+  border: 1px solid var(--hx-line);
+  border-radius: 0;
+  background: none;
+  font-family: var(--hx-font-mono);
+  color: var(--hx-ink-mute);
+}
+
+@media (max-width: 900px) {
+  .hx-theme .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hx-theme .below-viewer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* La barra de 3px que la hoja vieja pone abajo en móvil. */
+  .hx-theme .object-option.selected {
+    box-shadow: none;
+  }
+
+  /* El botón de compartir se queda sólo con el ícono, en un círculo. */
+  .hx-theme .share-button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  /* La procedencia de los datos no se oculta: es información de honestidad. */
+  .hx-theme .sidebar-bottom {
+    display: flex;
+    margin-top: var(--hx-space-md);
+  }
+
+  .hx-theme .viewer-toolbar,
+  .hx-theme .viewer-meta,
+  .hx-theme .viewer-aviso {
+    padding-inline: var(--hx-pad-xs);
+  }
+
+  /* La procedencia ocupa su propia línea al acomodarse los chips. */
+  .hx-theme .meta-origen {
+    margin-left: 0;
   }
 }

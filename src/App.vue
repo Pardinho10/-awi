@@ -396,9 +396,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
       <div class="mission-stat"><span class="stat-icon"><i class="bi bi-stars" /></span><div><strong>102</strong><span>bandas infrarrojas</span></div><div class="stat-rule" /><div><strong>6 <small>meses</small></strong><span>entre mapeos del cielo</span></div></div>
     </section>
 
-    <div class="workspace container-fluid px-0">
-      <div class="row g-3 align-items-start">
-        <aside class="col-12 col-lg-3">
+    <div class="workspace">
+      <aside class="sidebar-col">
           <div class="sidebar panel">
             <div class="panel-heading"><div><span class="eyebrow">EXPLORAR</span><h2>Elegí un objeto</h2></div><span class="count-pill">{{ objects.length }}</span></div>
             <label class="search-box"><i class="bi bi-search" /><input v-model="query" placeholder="Buscar objeto..." aria-label="Buscar objeto" /><kbd>/</kbd></label>
@@ -414,7 +413,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
           </div>
         </aside>
 
-        <section class="col-12 col-lg-9 viewer-column">
+        <section class="viewer-column">
           <div v-if="ready" class="viewer panel">
             <div class="viewer-toolbar"><div><span class="eyebrow">CAMPO CELESTE <span class="toolbar-slash">/</span> {{ selectedObject.tag }}</span><h2>{{ selectedObject.name }}</h2></div><button class="share-button" @click="shareView"><i class="bi bi-share" /><span>Compartir vista</span></button></div>
             <div v-if="fichaTecnica.length" class="viewer-meta" aria-label="Metadatos del recorte">
@@ -485,8 +484,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
             <LatidoChart :puntos="latido.puntos" :nombre="selectedObject.name" :motivo="latido.motivo" :cargando="latido.estado === 'loading'" />
           </section>
           <div class="below-viewer"><span><i class="bi bi-info-circle" /> {{ ready ? selectedObject.demoUse : 'Esta experiencia está en desarrollo.' }} <span class="caption-divider">·</span> {{ dataSourceNote }}</span><span class="keyboard-hint">NAVEGÁ CON <kbd>←</kbd> <kbd>→</kbd></span></div>
-        </section>
-      </div>
+      </section>
     </div>
 
     <footer class="footer"><span>ÑAWI <span class="footer-dot">·</span> UN OJO INFRARROJO PARA TODOS</span><span>DATOS DE MISIÓN SPHEREx <i class="bi bi-arrow-up-right" /></span></footer>
