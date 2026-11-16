@@ -474,7 +474,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
       :objeto="nombreObjeto"
     />
 
-    <div class="workspace">
+    <div class="workspace" id="explorar">
       <aside class="sidebar-col">
           <div class="sidebar panel">
             <div class="panel-heading"><div><span class="eyebrow">{{ t('catalog.eyebrow') }}</span><h2>{{ t('catalog.title') }}</h2></div><span class="count-pill">{{ objects.length }}</span></div>

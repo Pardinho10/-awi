@@ -145,6 +145,13 @@ body.hx-theme::before {
   z-index: 1;
 }
 
+/* Los anclajes del cover ("Explorar") desplazan la página: el salto es suave
+   salvo que el sistema pida menos movimiento. */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
 /* El nav es fixed: el contenido que NO es el cover necesita compensar su
    altura, o la primera sección arranca debajo de la barra. Se resuelve con
    scroll-margin en los anclajes y con el padding del workspace. */
