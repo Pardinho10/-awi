@@ -59,6 +59,17 @@ function marcarContacto(ok, error = null) {
   apiHealth.at = new Date().toISOString();
 }
 
+/**
+ * Error con `code` + `params` para que la vista lo traduzca. El mensaje en
+ * español queda como respaldo (consola, consumidores sin i18n).
+ */
+function fallo(code, params, mensaje) {
+  const error = new Error(mensaje ?? code);
+  error.code = code;
+  error.params = params ?? {};
+  return error;
+}
+
 function esJson(response) {
   return String(response.headers.get('content-type') ?? '').toLowerCase().includes('json');
 }
@@ -76,8 +87,9 @@ function mensajeDelCuerpo(cuerpo) {
  * GET + parseo con errores explícitos en español.
  * `descripcion` se usa para redactar el mensaje ("el catálogo", "el objeto «x»").
  */
-async function requestJson(path, descripcion) {
+async function requestJson(path, recurso) {
   const url = `${API_BASE}${path}`;
+  const etiqueta = recurso.code === 'objeto' ? `el objeto «${recurso.slug}»` : 'el catálogo de objetos';
   const control = new AbortController();
   const temporizador = setTimeout(() => control.abort(), TIMEOUT_MS);
 
@@ -89,11 +101,14 @@ async function requestJson(path, descripcion) {
     });
   } catch (error) {
     const abortado = error?.name === 'AbortError';
+    const base = { recurso: recurso.code, ...(recurso.slug ? { slug: recurso.slug } : {}), base: API_BASE };
     const mensaje = abortado
-      ? `La consulta de ${descripcion} tardó más de ${TIMEOUT_MS / 1000} segundos.`
-      : `No pudimos obtener ${descripcion}. Revisá tu conexión e intentá de nuevo.`;
+      ? `La consulta de ${etiqueta} tardó más de ${TIMEOUT_MS / 1000} segundos.`
+      : `No pudimos obtener ${etiqueta}. Revisá tu conexión e intentá de nuevo.`;
     marcarContacto(false, mensaje);
-    throw new Error(mensaje);
+    throw abortado
+      ? fallo('timeout', { ...base, segundos: TIMEOUT_MS / 1000 }, mensaje)
+      : fallo('network', base, mensaje);
   } finally {
     clearTimeout(temporizador);
   }
@@ -114,19 +129,24 @@ async function requestJson(path, descripcion) {
 
   if (!response.ok) {
     const detalle = mensajeDelCuerpo(cuerpo);
+    const base = { recurso: recurso.code, ...(recurso.slug ? { slug: recurso.slug } : {}), status: response.status, detalle: detalle ? ` ${detalle}` : '' };
     const mensaje = response.status === 404
-      ? `No encontramos ${descripcion}.${detalle ? ` ${detalle}` : ''}`
-      : `No pudimos obtener ${descripcion} (código ${response.status}).${detalle ? ` ${detalle}` : ''}`;
+      ? `No encontramos ${etiqueta}.${detalle ? ` ${detalle}` : ''}`
+      : `No pudimos obtener ${etiqueta} (código ${response.status}).${detalle ? ` ${detalle}` : ''}`;
     marcarContacto(false, mensaje);
-    throw new Error(mensaje);
+    throw fallo(response.status === 404 ? 'notFound' : 'http', base, mensaje);
   }
 
   if (!parseoOk || (!esJson(response) && cuerpo === null)) {
     const mensaje =
-      `Recibimos una respuesta inesperada al pedir ${descripcion}. ` +
+      `Recibimos una respuesta inesperada al pedir ${etiqueta}. ` +
       'Probá de nuevo en unos instantes.';
     marcarContacto(false, mensaje);
-    throw new Error(mensaje);
+    throw fallo('notJson', {
+      recurso: recurso.code,
+      ...(recurso.slug ? { slug: recurso.slug } : {}),
+      tipo: response.headers.get('content-type') || 'desconocido',
+    }, mensaje);
   }
 
   marcarContacto(true, null);
@@ -153,7 +173,7 @@ async function completarAstrometria(objetos) {
     try {
       const ficha = await requestJson(
         `/api/objetos/${encodeURIComponent(objeto.slug)}/catalogo/`,
-        `la astrometría de «${objeto.slug}»`,
+        { code: 'objeto', slug: objeto.slug },
       );
       const astrometria = ficha?.astrometria;
       if (astrometria && Number.isFinite(astrometria.ra_deg)) porSlug.set(objeto.slug, astrometria);
@@ -189,11 +209,11 @@ export const apiSource = Object.freeze({
 
   /** Catálogo crudo del backend (lo traduce ../adapters.js a modelo de vista). */
   async listObjects() {
-    const datos = await requestJson('/api/objetos/', 'el catálogo de objetos');
+    const datos = await requestJson('/api/objetos/', { code: 'catalogo' });
     if (!Array.isArray(datos)) {
       const mensaje = 'Los datos del catálogo llegaron con un formato inesperado.';
       marcarContacto(false, mensaje);
-      throw new Error(mensaje);
+      throw fallo('formato', { recurso: 'catalogo' }, mensaje);
     }
     return completarAstrometria(datos);
   },
@@ -205,16 +225,16 @@ export const apiSource = Object.freeze({
    */
   async listFrames(slug) {
     if (typeof slug !== 'string' || !slug.trim()) {
-      throw new Error('Falta el identificador del objeto para pedir los cuadros.');
+      throw fallo('sinSlug', { recurso: 'objeto', slug: '' }, 'Falta el identificador del objeto para pedir los cuadros.');
     }
     const datos = await requestJson(
       `/api/objetos/${encodeURIComponent(slug.trim())}/`,
-      `el objeto «${slug.trim()}»`,
+      { code: 'objeto', slug: slug.trim() },
     );
     if (!datos || typeof datos !== 'object' || Array.isArray(datos)) {
       const mensaje = `Los datos de «${slug.trim()}» llegaron con un formato inesperado.`;
       marcarContacto(false, mensaje);
-      throw new Error(mensaje);
+      throw fallo('formato', { recurso: 'objeto', slug: slug.trim() }, mensaje);
     }
     const cuadros = Array.isArray(datos.cuadros) ? datos.cuadros : [];
     return toFramesVista(cuadros, { apiBase: API_BASE, tamanoPx: datos.tamano_px });
@@ -234,17 +254,17 @@ export const apiSource = Object.freeze({
    */
   async getDetalleObjeto(slug) {
     if (typeof slug !== 'string' || !slug.trim()) {
-      throw new Error('Falta el identificador del objeto para pedir el detalle.');
+      throw fallo('sinSlug', { recurso: 'objeto', slug: '' }, 'Falta el identificador del objeto para pedir el detalle.');
     }
     const datos = await requestJson(
       `/api/objetos/${encodeURIComponent(slug.trim())}/`,
-      `el objeto «${slug.trim()}»`,
+      { code: 'objeto', slug: slug.trim() },
     );
     const detalle = toDetalleVista(datos, { apiBase: API_BASE });
     if (!detalle) {
       const mensaje = `Los datos de «${slug.trim()}» llegaron con un formato inesperado.`;
       marcarContacto(false, mensaje);
-      throw new Error(mensaje);
+      throw fallo('formato', { recurso: 'objeto', slug: slug.trim() }, mensaje);
     }
     return detalle;
   },

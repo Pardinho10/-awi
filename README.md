@@ -170,6 +170,26 @@ Los datos pertenecen a esas misiones y archivos; Nawi los reúne, precalcula rec
 alineados y los muestra, pero **no los recalcula ni los corrige en el frontend**. Cuando un
 valor falta, la interfaz lo dice ("Banda sin dato") en lugar de completarlo.
 
+Los avisos científicos (señal débil, núcleo saturado, sin recortes) viajan con un **código
+estable** (`motivo_codigo`) además del texto, para que la interfaz los traduzca. El registro
+único está en `backend/pipeline/motivos.py` (ver `doc/contrato-api.md` §7).
+
+### Verificación (idiomas y motivos)
+
+```bash
+npm run check            # las dos comprobaciones
+npm run check:i18n       # catálogos es/en sincronizados
+npm run check:motivos    # motivos del backend con código y clave de i18n
+```
+
+- **`check:i18n`** falla si a un idioma le falta o le sobra una clave, si un texto quedó vacío
+  o si los placeholders no coinciden (`{n}` en español y `{m}` en inglés).
+- **`check:motivos`** falla si un `datos.json` tiene motivo sin código, si el código no está en
+  el registro, si el texto diverge, o si falta la clave `motivo.*` en algún idioma.
+- Requiere el venv del backend (`backend/.venv`) para la segunda. Conviene correrlo antes de
+  cada commit y en la demo; no está atado a `npm run build` a propósito, para que el build del
+  frontend no dependa de Python.
+
 ## Estado real (verificado el 2026-11-15 contra el backend)
 
 | Objeto | Cuadros | Longitud de onda | Latido | Calidad del recorte |

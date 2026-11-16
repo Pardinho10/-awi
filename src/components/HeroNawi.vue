@@ -58,6 +58,7 @@ const TEXTOS_BASE = {
   creditoAviso: '· imagen de archivo, no una observación de Ñawi',
   datoEtiqueta: 'Observación real de SPHEREx',
   datoEscala: '58×58 px, sin interpolar',
+  bajar: 'Explorar',
 };
 
 const t = computed(() => ({ ...TEXTOS_BASE, ...props.textos }));
@@ -112,7 +113,7 @@ const t = computed(() => ({ ...TEXTOS_BASE, ...props.textos }));
       <!-- Capa 3: el dato. Flota en la esquina inferior derecha del cover. -->
       <figure v-if="cuadro" class="cover-dato">
         <div class="cover-dato-marco">
-          <img class="cover-dato-img" :src="cuadro" :alt="`Recorte infrarrojo real de ${objeto || 'un objeto'} del ${fecha}`" />
+          <img class="cover-dato-img" :src="cuadro" :alt="`${t.datoEtiqueta}: ${objeto || '—'} · ${fecha}`" />
           <span class="cover-dato-cruz" aria-hidden="true" />
         </div>
         <figcaption class="cover-dato-pie">
@@ -126,7 +127,7 @@ const t = computed(() => ({ ...TEXTOS_BASE, ...props.textos }));
     <!-- Riel inferior: lo que antes era el bloque de cifras. -->
     <div class="cover-riel">
       <a class="cover-bajar" href="#explorar">
-        <span class="cover-bajar-texto">Explorar</span>
+        <span class="cover-bajar-texto">{{ t.bajar }}</span>
         <span class="cover-bajar-circulo">
           <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" fill="none">
             <path d="M6 1v9M2.5 6.5 6 10l3.5-3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />

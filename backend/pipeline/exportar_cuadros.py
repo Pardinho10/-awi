@@ -9,6 +9,7 @@ from PIL import Image
 import warnings
 warnings.filterwarnings("ignore")
 from comun import RAIZ, cargar
+from motivos import motivo as motivo_registrado
 
 slug = sys.argv[1]
 o, c0, centro = cargar(slug)
@@ -21,7 +22,7 @@ datos_json = dict(
     slug=slug, nombre=o["nombre"], tipo=o["tipo"],
     centro={"ra_deg": round(centro.ra.deg, 6), "dec_deg": round(centro.dec.deg, 6)},
     fov_arcmin=round(N * PIX / 60, 2), pixel_arcsec=PIX, tamano_px=N,
-    estado="ok", motivo="", cuadros=[], latido=[],
+    estado="ok", motivo="", motivo_codigo="", cuadros=[], latido=[],
     rastro={"desplazamiento_arcsec": None, "direccion_deg": None,
             "incertidumbre_arcsec": None, "pm_publicado_arcsec_yr": round(float(np.hypot(o["pm_ra_cosdec_mas_yr"], o["pm_dec_mas_yr"])) / 1000, 3)},
     revelar={"snr_vs_cuadros": []},
@@ -36,7 +37,7 @@ def guardar():
 archivos = sorted(ENTRADA.glob("*.fits")) if ENTRADA.exists() else []
 if not archivos:
     datos_json["estado"] = "sin_datos"
-    datos_json["motivo"] = "No hay recortes de SPHEREx para este objeto."
+    datos_json.update(motivo_registrado("sin_cuadros"))
     guardar()
     raise SystemExit("Sin recortes: se guardó datos.json con estado sin_datos.")
 

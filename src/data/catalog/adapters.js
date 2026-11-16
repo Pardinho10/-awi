@@ -26,6 +26,44 @@ const TIPO_LABEL = {
   estrella_variable: 'Estrella variable',
 };
 
+/** Nombre del objeto en inglés. Los del backend vienen en español. */
+const NOMBRE_EN = Object.freeze({
+  barnard: "Barnard's Star",
+  'wise-0855': 'WISE 0855-0714',
+  'epsilon-indi-b': 'Epsilon Indi B',
+  'rw-aurigae': 'RW Aurigae',
+  'r-draconis': 'R Draconis',
+});
+
+/** Código de uso demostrativo por objeto, para traducir el texto en la vista. */
+const USO_POR_SLUG = Object.freeze({
+  barnard: 'movimiento',
+  'wise-0855': 'bonus',
+  'epsilon-indi-b': 'sistema',
+  'rw-aurigae': 'variabilidad',
+  'r-draconis': 'variabilidad',
+});
+
+const USO_POR_TIPO = Object.freeze({
+  estrella_movimiento_propio: 'movimiento',
+  estrella_variable: 'variabilidad',
+});
+
+const TIPO_LABEL_EN = {
+  estrella_movimiento_propio: 'High proper motion star',
+  enana_marron_Y: 'Y-class brown dwarf',
+  enana_marron: 'Brown dwarf',
+  estrella_variable: 'Variable star',
+};
+
+const TAG_EN = {
+  MOVIMIENTO: 'MOTION',
+  BONUS: 'BONUS',
+  SISTEMA: 'SYSTEM',
+  VARIABLE: 'VARIABLE',
+  OBJETO: 'OBJECT',
+};
+
 const ROL_LABEL = {
   principal: 'Objeto principal',
   secundario: 'Objeto secundario',
@@ -230,7 +268,11 @@ export function toDetalleVista(datos, { apiBase, motivoSinLatido = 'Todavía no 
     // Estado del objeto: depende de los cuadros, no de la curva de brillo.
     estado: sinCuadros ? 'sin_datos' : 'ok',
     // Motivo que publica el backend sobre el objeto (no sobre el latido).
+    // `motivoCodigo` es la clave traducible; `motivo` queda como texto original.
     motivo: motivoBackend,
+    motivoCodigo: typeof datos.motivo_codigo === 'string' && datos.motivo_codigo.trim()
+      ? datos.motivo_codigo.trim()
+      : null,
     latido,
     // Estado propio de la curva de brillo, para no mezclarlo con el del objeto.
     latidoEstado: sinLatido ? 'sin_datos' : 'ok',
@@ -264,6 +306,8 @@ function coordenadas(raw) {
     epoca: raw.epoca ?? null,
     status: 'catalogo',
     statusLabel: 'CATÁLOGO',
+    // Claves traducibles: la vista arma el rótulo y la nota en el idioma activo.
+    statusLabelKey: 'catalogo',
     note:
       'Coordenadas publicadas por SIMBAD/Gaia DR3. ' +
       'El frontend las muestra sin verificarlas ni recalcularlas.',
@@ -310,9 +354,17 @@ export function toObjetoVista(raw) {
     // alias que usa la vista
     id: raw.slug,
     name: raw.nombre,
+    // Nombre localizado: la vista elige según el idioma activo.
+    nameEn: NOMBRE_EN[raw.slug] ?? raw.nombre,
     kind: TIPO_LABEL[raw.tipo] ?? raw.tipo,
+    kindEn: TIPO_LABEL_EN[raw.tipo] ?? raw.tipo,
+    tagEn: TAG_EN[extra.tag] ?? extra.tag ?? 'OBJECT',
     tag: extra.tag ?? ROL_LABEL[raw.rol] ?? 'OBJETO',
     demoRole: extra.papel ?? ROL_LABEL[raw.rol] ?? '',
     demoUse: usoHonesto(raw, extra),
+    // Clave traducible del texto de uso; `demoUse` queda como respaldo en español.
+    usoCodigo: raw.estado === 'sin_datos'
+      ? 'sin_cuadros'
+      : (USO_POR_SLUG[raw.slug] ?? USO_POR_TIPO[raw.tipo] ?? 'general'),
   });
 }

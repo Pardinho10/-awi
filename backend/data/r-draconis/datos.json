@@ -11,6 +11,7 @@
   "tamano_px": 58,
   "estado": "ok",
   "motivo": "El núcleo de la estrella está saturado y enmascarado en las imágenes de SPHEREx, así que no se puede medir su brillo con fotometría de apertura estándar.",
+  "motivo_codigo": "nucleo_saturado",
   "cuadros": [
     {
       "fecha": "2025-05-16T22:57:21Z",

@@ -17,6 +17,28 @@
       rel="stylesheet"
     />
     <script>
+      // Idioma antes del primer paint: ?lang > localStorage > navegador > es.
+      (function () {
+        try {
+          var soportados = ['es', 'en'];
+          var normalizar = function (valor) {
+            if (!valor) return null;
+            var base = String(valor).trim().toLowerCase().split(/[-_]/)[0];
+            return soportados.indexOf(base) >= 0 ? base : null;
+          };
+          var deUrl = normalizar(new URLSearchParams(location.search).get('lang'));
+          var guardado = normalizar(localStorage.getItem('nawi-lang'));
+          var delNavegador = normalizar(navigator.language) || (navigator.languages || []).map(normalizar).filter(Boolean)[0] || null;
+          var lang = deUrl || guardado || delNavegador || 'es';
+          document.documentElement.setAttribute('lang', lang);
+          if (lang === 'en') {
+            document.title = 'Ñawi — SPHEREx Explorer';
+            var meta = document.querySelector('meta[name="description"]');
+            if (meta) meta.setAttribute('content', 'Ñawi: explore SPHEREx infrared observations across time.');
+          }
+        } catch (error) { /* sin localStorage: queda lang="es" */ }
+      })();
+
       // Tema oscuro por defecto; restaura el claro solo si se eligió explícitamente.
       (function () {
         try {

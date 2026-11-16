@@ -8,10 +8,14 @@
     "dev:front": "vite",
     "dev:back": "backend/.venv/bin/python backend/manage.py runserver 8010",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:i18n": "node scripts/verificar-i18n.mjs",
+    "check:motivos": "backend/.venv/bin/python backend/pipeline/verificar_motivos.py",
+    "check": "npm run check:i18n && npm run check:motivos"
   },
   "dependencies": {
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-i18n": "^11.4.20"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",

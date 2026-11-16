@@ -27,5 +27,11 @@ import './styles/nawi.css';
 import './styles/helios/helios.js';
 
 import App from './App.vue';
+import { i18n, aplicarLocaleInicial } from './i18n/index.js';
 
-createApp(App).mount('#root');
+/* El idioma se resuelve antes de montar: ?lang= > localStorage > navegador > es.
+   Aplicarlo acá deja <html lang>, <title> y la meta description en el idioma
+   correcto desde el primer render. */
+aplicarLocaleInicial();
+
+createApp(App).use(i18n).mount('#root');

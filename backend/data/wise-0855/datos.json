@@ -10,7 +10,8 @@
   "pixel_arcsec": 6.15,
   "tamano_px": 58,
   "estado": "ok",
-  "motivo": "Objeto muy tenue: la señal es débil (1 a 5 sigma) y su movimiento no se pudo medir de forma confiable con SPHEREx.",
+  "motivo": "Objeto muy tenue: la señal es débil (1 a 5 sigma) y su movimiento no se pudo medir de forma confiable.",
+  "motivo_codigo": "senal_debil",
   "cuadros": [
     {
       "fecha": "2025-05-05T16:49:00Z",

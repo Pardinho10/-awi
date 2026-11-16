@@ -131,9 +131,9 @@ const puntosValidos = computed(() => {
 
   const conPosiciones = limpios.map((p) => {
     const unidad = p.unidad || unidadBrillo.value;
-    const detalle = [`${p.fechaTexto} · brillo ${formatear(p.flujo)} ${unidad}`];
-    if (p.error !== null) detalle.push(`± ${formatear(p.error)}`);
-    if (p.lambda !== null) detalle.push(`${p.lambda} μm`);
+    const detalle = [t('latido.tooltipPoint', { fecha: p.fechaTexto, brillo: formatear(p.flujo), unidad })];
+    if (p.error !== null) detalle.push(t('latido.tooltipError', { error: formatear(p.error) }));
+    if (p.lambda !== null) detalle.push(t('latido.tooltipLambda', { lambda: p.lambda }));
 
     // Barra de error vertical (brillo ± brillo_error), recortada al eje.
     const barra = p.error !== null && p.error > 0
@@ -248,13 +248,14 @@ const linea = computed(() => puntosValidos.value.map((p) => `${p.x.toFixed(1)},$
 
 const descripcion = computed(() => {
   const puntos = puntosValidos.value;
-  const quien = props.nombre ? ` de ${props.nombre}` : '';
-  if (!puntos.length) return `Curva de brillo${quien}: sin datos de brillo todavía.`;
+  const quien = props.nombre ? ` · ${props.nombre}` : '';
+  if (!puntos.length) return t('latido.descriptionEmpty', { quien });
   const desde = fechaCorta(puntos[0].t, cruzaAnios.value);
   const hasta = fechaCorta(puntos[puntos.length - 1].t, cruzaAnios.value);
   const rango = `${desde} y ${hasta}`;
-  const medida = puntos.length === 1 ? `${puntos.length} medición (${rango})` : `${puntos.length} mediciones entre ${rango}`;
-  return `Curva de brillo${quien}: ${medida}. Brillo en ${unidadBrillo.value}, con el error informado. Valores sin recálculo.`;
+  return puntos.length === 1
+    ? t('latido.descriptionOne', { quien, rango, unidad: unidadBrillo.value })
+    : t('latido.descriptionMany', { quien, n: puntos.length, rango, unidad: unidadBrillo.value });
 });
 
 const hayError = computed(() => puntosValidos.value.some((p) => p.error !== null && p.error > 0));
@@ -263,37 +264,36 @@ const erroresInvisibles = computed(() => puntosValidos.value.some((p) => p.error
 const etiquetasOmitidas = computed(() => puntosValidos.value.some((p) => p.lambda !== null && !p.etiqueta));
 
 const pie = computed(() => {
-  const partes = [`Cada punto es una medición registrada, con brillo en ${unidadBrillo.value}.`];
+  const partes = [t('latido.pieIntro', { unidad: unidadBrillo.value })];
   if (hayLambda.value) {
-    partes.push(etiquetasOmitidas.value
-      ? 'La etiqueta indica la longitud de onda; las que no entran en el gráfico están en el tooltip.'
-      : 'La etiqueta indica la longitud de onda.');
+    partes.push(etiquetasOmitidas.value ? t('latido.pieLambdaOmitted') : t('latido.pieLambda'));
   }
   if (hayError.value) {
-    partes.push(erroresInvisibles.value
-      ? 'La barra vertical es el error informado; a esta escala es más fina que un píxel, el valor exacto está en el tooltip.'
-      : 'La barra vertical es el error informado de cada medición.');
+    partes.push(erroresInvisibles.value ? t('latido.pieErrorInvisible') : t('latido.pieError'));
   }
   return partes.join(' ');
 });
 
 const hayLambda = computed(() => puntosValidos.value.some((p) => p.lambda !== null));
+import { useI18n } from 'vue-i18n';
 import IconoNawi from './IconoNawi.vue';
+
+const { t } = useI18n();
 </script>
 
 <template>
   <div class="latido-chart">
     <div v-if="cargando" class="latido-estado" role="status">
       <IconoNawi nombre="espera"  />
-      <p>Cargando el latido…</p>
+      <p>{{ t('latido.loading') }}</p>
     </div>
 
     <div v-else-if="!puntosValidos.length" class="latido-estado latido-vacio">
       <IconoNawi nombre="pulso"  />
       <div>
-        <strong>Sin datos de brillo todavía</strong>
-        <p v-if="motivo">Motivo informado: {{ motivo }}</p>
-        <p v-else>Cuando haya mediciones disponibles, la curva aparece acá. No se dibujan ejes ni puntos inventados.</p>
+        <strong>{{ t('latido.emptyTitle') }}</strong>
+        <p v-if="motivo">{{ t('latido.emptyMotivo', { motivo }) }}</p>
+        <p v-else>{{ t('latido.emptyNoMotivo') }}</p>
       </div>
     </div>
 
@@ -307,8 +307,8 @@ import IconoNawi from './IconoNawi.vue';
           <line class="latido-axis" :x1="M.left" :x2="ANCHO - M.right" :y1="M.top + altoUtil" :y2="M.top + altoUtil" />
           <line class="latido-axis" :x1="M.left" :x2="M.left" :y1="M.top" :y2="M.top + altoUtil" />
           <text v-for="tick in ticksX" :key="`x-${tick.x}`" class="latido-tick" :x="tick.x" :y="M.top + altoUtil + 22" text-anchor="middle">{{ tick.label }}</text>
-          <text class="latido-eje-titulo" :x="M.left" :y="M.top - 10">brillo ({{ unidadBrillo }})</text>
-          <text class="latido-eje-titulo" :x="ANCHO - M.right" :y="ALTO - 8" text-anchor="end">fecha</text>
+          <text class="latido-eje-titulo" :x="M.left" :y="M.top - 10">{{ t('latido.axisBrightness', { unidad: unidadBrillo }) }}</text>
+          <text class="latido-eje-titulo" :x="ANCHO - M.right" :y="ALTO - 8" text-anchor="end">{{ t('latido.axisDate') }}</text>
         </g>
 
         <polyline v-if="puntosValidos.length > 1" class="latido-linea" :points="linea" />

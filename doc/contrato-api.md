@@ -108,7 +108,8 @@ análisis precalculados.
 | `pixel_arcsec` | number | Escala del recorte (hoy 6.15″/píxel) |
 | `tamano_px` | integer | Lado del recorte en píxeles (hoy 58) |
 | `estado` | `ok` \| `sin_datos` | Estado de los datos del objeto |
-| `motivo` | string | Explicación cuando `estado` es `sin_datos` (puede ser `""`) |
+| `motivo` | string | Explicación legible del objeto (puede ser `""`). Es el respaldo en español. |
+| `motivo_codigo` | string | **Código estable** del motivo (`""` si no hay). Es lo que traduce el frontend. Ver §7. |
 
 ### 3.1 `cuadros[]` — serie temporal
 
@@ -186,7 +187,7 @@ Notas de honestidad:
 | `pm_medido_arcsec_yr` | number \| null | Movimiento propio medido en los recortes |
 | `cuadros_usados` | integer \| null | Cuántos cuadros entraron en la medición |
 | `fecha_inicio`, `fecha_fin` | string \| null | Rango de fechas usado |
-| `frase_simple` | string \| null | Texto llano listo para mostrar |
+| `frase_simple` | string \| null | Texto llano **en español** que redacta el backend. La interfaz **no lo usa**: compone la frase en el idioma activo con los valores medidos (`desplazamiento_arcsec`, `pm_publicado_arcsec_yr`, `fecha_inicio`, `fecha_fin`, `pixel_arcsec`). Se mantiene como respaldo para otros consumidores de la API. |
 
 **Hoy el backend todavía no calcula el rastro**: `backend/pipeline/exportar_cuadros.py`
 escribe el bloque con los cuatro primeros campos en `null` (salvo
@@ -275,6 +276,65 @@ En el frontend, `cuadros[].url` viene relativa y se resuelve contra
 
 ---
 
+## 7. Convención de motivos (`motivo_codigo`)
+
+Un **motivo** explica por qué un objeto no tiene un dato (señal débil, núcleo
+saturado, sin recortes). No es un error de la aplicación: es información
+científica que la interfaz muestra con honestidad, y por eso viaja con un
+**código estable** además del texto.
+
+| Campo | Quién lo consume | Ejemplo |
+|---|---|---|
+| `motivo` | respaldo legible (JSON crudo, consola, depuración) | `"Objeto muy tenue: la señal es débil (1 a 5 sigma)…"` |
+| `motivo_codigo` | **la interfaz**, para traducir | `"senal_debil"` |
+
+### Reglas
+
+1. **El registro es único:** `backend/pipeline/motivos.py`. Los códigos no se
+   escriben a mano en `datos.json` ni en el frontend.
+2. **Todo motivo con texto lleva código.** Si un `datos.json` viejo no lo tiene,
+   la API lo deduce del texto (`codigo_por_texto`); si no coincide con ningún
+   registro, lo entrega con `motivo_codigo: ""` y el frontend muestra el texto
+   original sin inventar traducción.
+3. **Cada código necesita su clave** `motivo.<codigo>` en `src/i18n/es.js` y
+   `src/i18n/en.js`.
+4. **Códigos reservados:** `""` (sin motivo), `sin_datos` (el objeto existe pero
+   no tiene datos precalculados), `sin_cuadros` (no hay recortes de SPHEREx).
+
+### Códigos vigentes
+
+| `motivo_codigo` | Cuándo |
+|---|---|
+| `senal_debil` | Objeto muy tenue; el movimiento no se puede medir de forma confiable |
+| `nucleo_saturado` | El núcleo está saturado y enmascarado; no hay fotometría de apertura |
+| `sin_cuadros` | El pipeline no encontró recortes para el objeto |
+| `sin_datos` | Falta `datos.json` para ese objeto |
+
+### Cómo agregar un motivo
+
+```bash
+# 1. registrar el código (una sola vez)
+#    backend/pipeline/motivos.py  →  MOTIVOS["mi_motivo"] = "Texto en español…"
+
+# 2. usarlo al exportar
+#    from motivos import motivo
+#    datos_json.update(motivo("mi_motivo"))
+
+# 3. agregar las dos claves de i18n
+#    src/i18n/es.js  →  motivo: { mi_motivo: "…" }
+#    src/i18n/en.js  →  motivo: { mi_motivo: "…" }
+
+# 4. verificar que backend y frontend coinciden
+cd backend && ./.venv/bin/python pipeline/verificar_motivos.py
+```
+
+El verificador sale con código **1** si un `datos.json` tiene motivo sin código,
+si el código no existe en el registro, si el texto guardado difiere del registro
+o si falta/sobra una clave en los catálogos de i18n. Conviene correrlo antes de
+cada commit y en la demo.
+
+---
+
 ## Códigos de error
 
 | HTTP | Cuándo | Cuerpo |
@@ -303,7 +363,7 @@ Capa de datos en `src/data/catalog/`:
 |---|---|---|
 | `catalog.listObjects()` | `GET /api/objetos/` | Modelo de vista de los 5 objetos |
 | `catalog.listFrames(slug)` | `GET /api/objetos/<slug>/` → `cuadros` | Frames con `date`, `band`, `url` absoluta, `illustrative: false`, `longitudOndaUm`, `calidadOk` |
-| `catalog.getDetalleObjeto(slug)` | `GET /api/objetos/<slug>/` | `{ slug, estado, motivo, latido, latidoEstado, motivoLatido, cuadros, metadatos, rastro, revelar, conocido }` |
+| `catalog.getDetalleObjeto(slug)` | `GET /api/objetos/<slug>/` | `{ slug, estado, motivo, motivoCodigo, latido, latidoEstado, motivoLatido, cuadros, metadatos, rastro, revelar, conocido }` |
 
 Estado de la fuente (`DATA_SOURCE_INFO.status`, en `src/data/catalog/sourceInfo.js`),
 derivado de la última consulta real:

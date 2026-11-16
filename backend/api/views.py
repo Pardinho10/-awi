@@ -12,6 +12,7 @@ from pipeline.catalogo import (
     ErrorCatalogo,
 )
 from pipeline.astrometria import calcular_posicion
+from pipeline.motivos import normalizar as normalizar_motivo
 
 DATA = Path(settings.BASE_DIR) / "data"
 
@@ -67,14 +68,15 @@ def detalle_objeto(request, slug):
         return JsonResponse({"error": str(error)}, status=500)
     d = _leer(slug)
     if d is None:
-        return JsonResponse({
-            "slug": slug, "nombre": o.get("nombre", slug), "tipo": o.get("tipo"),
-            "estado": "sin_datos",
-            "motivo": "Todavía no se precalcularon datos para este objeto.",
-            "cuadros": [], "latido": [],
-        })
+        ficha = {"slug": slug, "nombre": o.get("nombre", slug), "tipo": o.get("tipo"),
+                 "estado": "sin_datos", "cuadros": [], "latido": []}
+        ficha.update(normalizar_motivo("", "sin_datos"))
+        return JsonResponse(ficha)
     d.setdefault("estado", "ok")
     d.setdefault("latido", [])
+    # Convención: si el registro trae motivo pero no código (dato viejo), se deduce
+    # del texto; nunca se inventa uno nuevo.
+    d.update(normalizar_motivo(d.get("motivo"), d.get("motivo_codigo")))
     return JsonResponse(d)
 
 

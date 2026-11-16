@@ -1,9 +1,16 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { DATA_SOURCE_INFO, catalog } from './data/catalog/index.js';
 import LatidoChart from './components/LatidoChart.vue';
 import RastroPanel from './components/RastroPanel.vue';
 import IconoNawi from './components/IconoNawi.vue';
+import HeroNawi from './components/HeroNawi.vue';
+import CursorNawi from './components/CursorNawi.vue';
+import LangSwitch from './components/LangSwitch.vue';
+import { locale } from './i18n/index.js';
+
+const { t } = useI18n();
 
 // Tema claro/oscuro: arranca según la preferencia del sistema y se recuerda en localStorage.
 const THEME_KEY = 'nawi-theme';
@@ -39,7 +46,6 @@ function toggleTheme() {
 }
 
 // Catálogo y cuadros vienen de la capa de datos intercambiable (src/data/catalog).
-// Hoy la respalda el mock; cuando existan los endpoints pasa a la API sin tocar la vista.
 const objects = ref([]);
 const frames = ref([]);
 const framesInfo = ref({ estado: '', motivo: '' });
@@ -64,6 +70,22 @@ const previousFrame = computed(() => frames.value[Math.max(0, frameIndex.value -
 const filteredObjects = computed(() => objects.value.filter((item) => `${item.name} ${item.kind}`.toLowerCase().includes(query.value.toLowerCase())));
 const ready = computed(() => !loading.value && !loadError.value && Boolean(selectedObject.value) && Boolean(frame.value));
 const progressPercent = computed(() => (frames.value.length > 1 ? (frameIndex.value / (frames.value.length - 1)) * 100 : 0));
+
+/** Localidad para números y fechas, según el idioma activo. */
+const localeNumero = computed(() => (locale.value === 'en' ? 'en-US' : 'es-AR'));
+
+/**
+ * Mensaje de error traducible. La capa de datos adjunta `code` + `params`;
+ * si por algún motivo no viene, se usa el mensaje crudo como último recurso.
+ */
+function textoError(error) {
+  const code = error?.code;
+  if (!code) return error?.message || t('errors.catalogo');
+  const params = { ...(error.params ?? {}) };
+  // `recurso` viaja como clave ('catalogo' | 'objeto') y se traduce con su slug.
+  if (params.recurso) params.recurso = t(`errors.recursos.${params.recurso}`, { slug: params.slug ?? '' });
+  return t(`errors.${code}`, params);
+}
 
 // Zoom del recorte real. El PNG del backend son 58x58 px: no hay más detalle
 // que ese, así que el zoom solo agranda. Se ofrecen escalas ENTERAS para que
@@ -136,14 +158,14 @@ const trayectoria = computed(() => {
 const fichaTecnica = computed(() => {
   const m = metadatos.value;
   if (!m) return [];
-  const numero = (valor, decimales = 2) => valor.toLocaleString('es-AR', {
+  const numero = (valor, decimales = 2) => valor.toLocaleString(localeNumero.value, {
     minimumFractionDigits: 0,
     maximumFractionDigits: decimales,
   });
   const chips = [];
-  if (Number.isFinite(m.fovArcmin)) chips.push(`campo ${numero(m.fovArcmin)}′`);
-  if (Number.isFinite(m.pixelArcsec)) chips.push(`${numero(m.pixelArcsec)}″/px`);
-  if (Number.isFinite(m.tamanoPx)) chips.push(`${m.tamanoPx}×${m.tamanoPx} px`);
+  if (Number.isFinite(m.fovArcmin)) chips.push(t('viewer.chipField', { n: numero(m.fovArcmin) }));
+  if (Number.isFinite(m.pixelArcsec)) chips.push(t('viewer.chipScale', { n: numero(m.pixelArcsec) }));
+  if (Number.isFinite(m.tamanoPx)) chips.push(t('viewer.chipPx', { n: m.tamanoPx }));
   return chips;
 });
 
@@ -154,10 +176,17 @@ const sinCuadros = computed(() => !loading.value && !loadError.value && Boolean(
 /**
  * Motivo que publica el backend sobre el objeto: no es un error de la app, es
  * una limitación científica informada (núcleo saturado, señal muy débil…).
- * El adaptador lo deja tal cual en `detalle.motivo`.
+ * El adaptador expone `motivoCodigo` (traducible) y deja `motivo` como respaldo.
  */
 const motivoBackend = computed(() => {
-  const motivo = detalle.value?.motivo;
+  const d = detalle.value;
+  if (!d) return '';
+  const codigo = d.motivoCodigo;
+  if (typeof codigo === 'string' && codigo.trim()) {
+    const traducido = t(`motivo.${codigo.trim()}`);
+    if (traducido !== `motivo.${codigo.trim()}`) return traducido;
+  }
+  const motivo = d.motivo;
   return typeof motivo === 'string' ? motivo.trim() : '';
 });
 
@@ -165,12 +194,12 @@ const motivoBackend = computed(() => {
 const motivoConCuadros = computed(() => (frames.value.length > 0 ? motivoBackend.value : ''));
 
 // Panel vacío: el motivo del backend (si existe) o el de la respuesta de cuadros.
-const motivoSinCuadros = computed(() => selectedObject.value?.motivo || motivoBackend.value || framesInfo.value.motivo || '');
+const motivoSinCuadros = computed(() => motivoBackend.value || framesInfo.value.motivo || '');
 const estadoSinCuadros = computed(() => selectedObject.value?.estado || framesInfo.value.estado || '');
 const tituloSinCuadros = computed(() => (
   estadoSinCuadros.value === 'sin_datos'
-    ? 'Este objeto todavía no tiene cuadros precalculados'
-    : 'No hay cuadros para mostrar de este objeto'
+    ? t('viewer.empty.titleSinDatos')
+    : t('viewer.empty.titleSinCuadros')
 ));
 const hayCuadrosReales = computed(() => frames.value.some((item) => item.illustrative === false));
 // El panel del latido solo aparece si hay curva que mostrar: un objeto sin
@@ -182,31 +211,72 @@ const mostrarLatido = computed(() => (
   && (latido.value.puntos.length > 0 || latido.value.estado === 'loading')
 ));
 
+/** Textos del hero, traducidos (el componente los recibe por prop). */
+const heroTextos = computed(() => ({
+  linea1: t('hero.line1'),
+  linea2: t('hero.line2'),
+  linea3Antes: t('hero.line3a'),
+  linea3Oro: t('hero.line3em'),
+  copy: t('hero.copy'),
+  cifra1: '102',
+  cifra1Rotulo: t('hero.statBands'),
+  cifra2: t('hero.statMonthsValue'),
+  cifra2Unidad: t('hero.statMonthsUnit'),
+  cifra2Rotulo: t('hero.statMonthsCaption'),
+  credito: t('hero.creditPrefix'),
+  creditoFuente: 'NASA/JPL-Caltech',
+  creditoAviso: t('hero.creditTail'),
+  datoEtiqueta: t('hero.dataLabel'),
+  datoEscala: t('hero.dataScale'),
+  bajar: t('hero.scrollHint'),
+}));
+
+/** Rótulo y nota de las coordenadas, traducidos (el backend manda el código). */
+function rotuloCoordenadas(coords) {
+  if (!coords) return '';
+  const clave = coords.statusLabelKey ?? 'catalogo';
+  const traducido = t(`viewer.coordsStatus.${clave}`);
+  return traducido === `viewer.coordsStatus.${clave}` ? (coords.statusLabel ?? '') : traducido;
+}
+const notaCoordenadas = (coords) => t('viewer.coordsNote', { fuente: 'SIMBAD / Gaia DR3' });
+
+/** Nombre/tipo/etiqueta del objeto en el idioma activo. */
+const nombreDe = (o) => (locale.value === 'en' ? (o?.nameEn ?? o?.name ?? '') : (o?.name ?? ''));
+const tipoDe = (o) => (locale.value === 'en' ? (o?.kindEn ?? o?.kind ?? '') : (o?.kind ?? ''));
+const tagDe = (o) => (locale.value === 'en' ? (o?.tagEn ?? o?.tag ?? '') : (o?.tag ?? ''));
+
+/** Nombre del objeto en el idioma activo (el backend lo manda en español). */
+const nombreObjeto = computed(() => {
+  const o = selectedObject.value;
+  if (!o) return '';
+  return locale.value === 'en' ? (o.nameEn ?? o.name) : o.name;
+});
+
+/** Texto de "para qué sirve" del objeto, traducido por código. */
+const usoObjeto = computed(() => {
+  const codigo = selectedObject.value?.usoCodigo;
+  if (codigo) {
+    const traducido = t(`objeto.uso.${codigo}`);
+    if (traducido !== `objeto.uso.${codigo}`) return traducido;
+  }
+  return selectedObject.value?.demoUse ?? '';
+});
+
 // Lo que se puede afirmar según el estado de la fuente. 'pending' no se disfraza
 // de datos del backend: se avisa que no hay nada conectado.
 // DATA_SOURCE_INFO es un store reactivo: el estado cambia con cada consulta al
 // backend ('pending' al arrancar, 'live' si respondió, 'error' si falló). Por eso
 // los textos se calculan en un computed y no una sola vez al montar.
-const SOURCE_COPY = {
-  demo: () => ({
-    title: 'Catálogo de demostración',
-    note: `${DATA_SOURCE_INFO.label} · cifras ilustrativas, no validadas.`,
-  }),
-  live: () => ({
-    title: 'Catálogo de observaciones',
-    note: `${DATA_SOURCE_INFO.label} · observaciones de la misión.`,
-  }),
-  pending: () => ({
-    title: 'Catálogo sin conectar',
-    note: `${DATA_SOURCE_INFO.label} · todavía no se consultaron los datos.`,
-  }),
-  error: () => ({
-    title: 'Catálogo no disponible',
-    note: DATA_SOURCE_INFO.error || 'No pudimos actualizar los datos en la última consulta.',
-  }),
-};
-
-const sourceCopy = computed(() => (SOURCE_COPY[DATA_SOURCE_INFO.status] ?? SOURCE_COPY.pending)());
+const ESTADOS_CON_COPIA = ['demo', 'live', 'pending', 'error'];
+const sourceCopy = computed(() => {
+  const estado = DATA_SOURCE_INFO.status;
+  const clave = ESTADOS_CON_COPIA.includes(estado) ? estado : 'pending';
+  const label = t('source.label');
+  // El detalle técnico del error vive aparte: la nota queda legible y el mensaje
+  // completo se muestra en el visor.
+  const note = t(`source.${clave}.note`, { label });
+  return { title: t(`source.${clave}.title`), note };
+});
 const dataSourceNote = computed(() => sourceCopy.value.note);
 
 // El backend puede devolver los cuadros como array o como objeto con
@@ -229,7 +299,7 @@ async function loadFrames() {
   } catch (error) {
     // "Sin datos" no es un error fatal: se muestra el panel vacío con el motivo.
     frames.value = [];
-    framesInfo.value = { estado: 'sin_datos', motivo: error?.message || '' };
+    framesInfo.value = { estado: 'sin_datos', motivo: textoError(error) };
   }
   if (frameIndex.value >= frames.value.length) frameIndex.value = 0;
 }
@@ -300,7 +370,7 @@ async function loadDetalle() {
     }
     if (buscaLatido) latido.value = { estado: 'empty', motivo: '', puntos: [] };
   } catch (error) {
-    if (buscaLatido) latido.value = { estado: 'empty', motivo: error?.message || '', puntos: [] };
+    if (buscaLatido) latido.value = { estado: 'empty', motivo: textoError(error), puntos: [] };
   }
 }
 
@@ -309,7 +379,7 @@ async function loadCatalog() {
   loading.value = true;
   loadError.value = '';
   try {
-    // Se leen los parámetros acá para respetar un enlace compartido (?obj=&frame=).
+    // Se leen los parámetros acá para respetar un enlace compartido (?obj=&frame=&lang=).
     const params = new URLSearchParams(window.location.search);
     objects.value = await catalog.listObjects();
 
@@ -328,7 +398,7 @@ async function loadCatalog() {
   } catch (error) {
     objects.value = [];
     frames.value = [];
-    loadError.value = error?.message || 'No se pudo cargar el catálogo.';
+    loadError.value = textoError(error);
   } finally {
     loading.value = false;
   }
@@ -336,6 +406,7 @@ async function loadCatalog() {
 
 watch([objectId, frameIndex], () => {
   if (loading.value || loadError.value) return;
+  // Se conservan los parámetros existentes (lang) y solo se actualizan obj/frame.
   const nextParams = new URLSearchParams(window.location.search);
   nextParams.set('obj', objectId.value);
   nextParams.set('frame', String(frameIndex.value));
@@ -368,9 +439,9 @@ function handleKeyDown(event) {
 async function shareView() {
   try {
     await navigator.clipboard.writeText(window.location.href);
-    notice.value = 'Enlace copiado';
+    notice.value = t('toast.copied');
   } catch {
-    notice.value = 'Copiá el enlace desde la barra del navegador';
+    notice.value = t('toast.copyManual');
   }
   window.setTimeout(() => { notice.value = ''; }, 2400);
 }
@@ -384,58 +455,63 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
 
 <template>
   <main class="app-shell">
+    <CursorNawi />
     <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="Ñawi, inicio"><span class="brand-mark"><IconoNawi nombre="ojo"  /></span><span>ñawi<span class="brand-dot">.</span></span></a>
-      <div class="mission-label"><span class="live-dot" /> EXPLORADOR INFRARROJO <span class="label-divider">/</span> SPHEREx</div>
+      <a class="brand" href="#inicio" :aria-label="t('a11y.brandHome')"><span class="brand-mark"><IconoNawi nombre="ojo" /></span><span>ñawi<span class="brand-dot">.</span></span></a>
+      <div class="mission-label"><span class="live-dot" /> {{ t('brand.mission') }} <span class="label-divider">/</span> SPHEREx</div>
       <div class="topbar-actions">
-        <button class="icon-button theme-button" :title="isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'" :aria-label="isLight ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'" :aria-pressed="isLight" @click="toggleTheme"><IconoNawi :nombre="isLight ? 'luna' : 'sol'" /></button>
-        <button class="icon-button help-button" title="Acerca de Nawi" aria-label="Acerca de Nawi"><IconoNawi nombre="ayuda"  /></button>
+        <LangSwitch />
+        <button class="icon-button theme-button" :title="isLight ? t('a11y.themeToDark') : t('a11y.themeToLight')" :aria-label="isLight ? t('a11y.themeToDark') : t('a11y.themeToLight')" :aria-pressed="isLight" @click="toggleTheme"><IconoNawi :nombre="isLight ? 'luna' : 'sol'" /></button>
+        <button class="icon-button help-button" :title="t('a11y.help')" :aria-label="t('a11y.help')"><IconoNawi nombre="ayuda" /></button>
       </div>
     </header>
 
-    <section id="inicio" class="intro-row">
-      <div><div class="eyebrow"><span>01</span> OBSERVATORIO DIGITAL</div><h1><span class="hero-line">El cielo cambia.</span><span class="hero-line">Ahora podés <span class="hero-gild">verlo.</span></span></h1><p class="intro-copy">Viajá a través de observaciones infrarrojas reales y seguí las huellas que dejan los objetos celestes.</p></div>
-      <div class="mission-stat"><span class="stat-icon"><IconoNawi nombre="estrellas"  /></span><div><strong>102</strong><span>bandas infrarrojas</span></div><div class="stat-rule" /><div><strong>6 <small>meses</small></strong><span>entre mapeos del cielo</span></div></div>
-    </section>
+    <HeroNawi
+      :textos="heroTextos"
+      :cuadro="frame && !frame.illustrative ? frame.url : ''"
+      :fecha="frame ? frame.date : ''"
+      :banda="frame ? frame.band : ''"
+      :objeto="nombreObjeto"
+    />
 
     <div class="workspace">
       <aside class="sidebar-col">
           <div class="sidebar panel">
-            <div class="panel-heading"><div><span class="eyebrow">EXPLORAR</span><h2>Elegí un objeto</h2></div><span class="count-pill">{{ objects.length }}</span></div>
-            <label class="search-box"><IconoNawi nombre="buscar"  /><input v-model="query" placeholder="Buscar objeto..." aria-label="Buscar objeto" /><kbd>/</kbd></label>
-            <div class="object-list" role="listbox" aria-label="Objetos astronómicos">
+            <div class="panel-heading"><div><span class="eyebrow">{{ t('catalog.eyebrow') }}</span><h2>{{ t('catalog.title') }}</h2></div><span class="count-pill">{{ objects.length }}</span></div>
+            <label class="search-box"><IconoNawi nombre="buscar" /><input v-model="query" :placeholder="t('catalog.searchPlaceholder')" :aria-label="t('a11y.search')" /><kbd>/</kbd></label>
+            <div class="object-list" role="listbox" :aria-label="t('a11y.objectList')">
               <button v-for="(object, index) in filteredObjects" :key="object.id" class="object-option" :class="{ selected: object.id === objectId }" role="option" :aria-selected="object.id === objectId" @click="chooseObject(object.id)">
-                <span class="object-index" :class="{ active: object.id === objectId }">{{ String(index + 1).padStart(2, '0') }}</span><span class="object-copy"><strong>{{ object.name }}</strong><small>{{ object.kind }}</small></span><span class="object-chevron"><IconoNawi nombre="flecha-externa"  /></span>
+                <span class="object-index" :class="{ active: object.id === objectId }">{{ String(index + 1).padStart(2, '0') }}</span><span class="object-copy"><strong>{{ nombreDe(object) }}</strong><small>{{ tipoDe(object) }}</small></span><span class="object-chevron"><IconoNawi nombre="flecha-externa" /></span>
               </button>
-              <div v-if="loading" class="empty-search">Cargando catálogo…</div>
+              <div v-if="loading" class="empty-search">{{ t('catalog.loading') }}</div>
               <div v-else-if="loadError" class="empty-search">{{ loadError }}</div>
-              <div v-else-if="!filteredObjects.length" class="empty-search">No hay objetos con ese nombre.</div>
+              <div v-else-if="!filteredObjects.length" class="empty-search">{{ t('catalog.empty') }}</div>
             </div>
-            <div class="sidebar-bottom"><span class="status-check"><IconoNawi nombre="check"  /></span><span>{{ sourceCopy.title }}<br /><small>{{ dataSourceNote }}</small></span></div>
+            <div class="sidebar-bottom"><span class="status-check"><IconoNawi nombre="check" /></span><span>{{ sourceCopy.title }}<br /><small>{{ dataSourceNote }}</small></span></div>
           </div>
         </aside>
 
         <section class="viewer-column">
           <div v-if="ready" class="viewer panel">
-            <div class="viewer-toolbar"><div><span class="eyebrow">CAMPO CELESTE <span class="toolbar-slash">/</span> {{ selectedObject.tag }}</span><h2>{{ selectedObject.name }}</h2></div><button class="share-button" @click="shareView"><IconoNawi nombre="compartir"  /><span>Compartir vista</span></button></div>
-            <div v-if="fichaTecnica.length" class="viewer-meta" aria-label="Metadatos del recorte">
-              <span v-for="chip in fichaTecnica" :key="chip" class="meta-chip"><IconoNawi nombre="regla"  /> {{ chip }}</span>
-              <span v-if="marcadorReal" class="meta-chip"><IconoNawi nombre="mira"  /> cruz: posición esperada</span>
-              <span v-if="trayectoria" class="meta-chip"><IconoNawi nombre="diagonal"  /> trayectoria: primer → último cuadro</span>
-              <span class="meta-origen">según los datos de la misión</span>
+            <div class="viewer-toolbar"><div><span class="eyebrow">{{ t('viewer.skyField') }} <span class="toolbar-slash">/</span> {{ tagDe(selectedObject) }}</span><h2>{{ nombreObjeto }}</h2></div><button class="share-button" @click="shareView"><IconoNawi nombre="compartir" /><span>{{ t('viewer.share') }}</span></button></div>
+            <div v-if="fichaTecnica.length" class="viewer-meta" :aria-label="t('a11y.viewerMeta')">
+              <span v-for="chip in fichaTecnica" :key="chip" class="meta-chip"><IconoNawi nombre="regla" /> {{ chip }}</span>
+              <span v-if="marcadorReal" class="meta-chip"><IconoNawi nombre="mira" /> {{ t('viewer.chipCross') }}</span>
+              <span v-if="trayectoria" class="meta-chip"><IconoNawi nombre="diagonal" /> {{ t('viewer.chipTrajectory') }}</span>
+              <span class="meta-origen">{{ t('viewer.metaOrigin') }}</span>
             </div>
             <div v-if="motivoConCuadros" class="viewer-aviso" role="note">
-              <IconoNawi nombre="alerta" aria-hidden="true"  />
+              <IconoNawi nombre="alerta" aria-hidden="true" />
               <div class="viewer-aviso-copy">
-                <span class="viewer-aviso-label">Advertencia</span>
+                <span class="viewer-aviso-label">{{ t('viewer.warning') }}</span>
                 <p class="viewer-aviso-texto">{{ motivoConCuadros }}</p>
               </div>
             </div>
             <div class="sky-stage" :class="{ comparison: compare, 'is-real': !frame.illustrative, 'is-suavizado': suavizado && !frame.illustrative }" :style="!frame.illustrative ? { '--zoom': zoomActivo } : null">
               <div v-if="!frame.illustrative" class="pixel-marco">
-                <img class="pixel-frame" :src="frame.url" :alt="`Recorte de ${selectedObject.name} del ${frame.date} en ${frame.band}`" />
-                <svg v-if="trayectoria" class="trayectoria" :viewBox="`0 0 ${tamanoRecorte} ${tamanoRecorte}`" role="img" :aria-label="`Trayectoria esperada entre el primer y el último cuadro (${trayectoria.desde} a ${trayectoria.hasta})`">
-                  <title>Trayectoria esperada entre el primer y el último cuadro ({{ trayectoria.desde }} a {{ trayectoria.hasta }})</title>
+                <img class="pixel-frame" :src="frame.url" :alt="t('viewer.frameAlt', { nombre: nombreObjeto, fecha: frame.date, banda: frame.band })" />
+                <svg v-if="trayectoria" class="trayectoria" :viewBox="`0 0 ${tamanoRecorte} ${tamanoRecorte}`" role="img" :aria-label="t('viewer.trajectoryAria', { desde: trayectoria.desde, hasta: trayectoria.hasta })">
+                  <title>{{ t('viewer.trajectoryAria', { desde: trayectoria.desde, hasta: trayectoria.hasta }) }}</title>
                   <line class="trayectoria-linea" :x1="trayectoria.x1" :y1="trayectoria.y1" :x2="trayectoria.x2" :y2="trayectoria.y2" />
                   <circle class="trayectoria-extremo" :cx="trayectoria.x1" :cy="trayectoria.y1" r="1.1" />
                   <circle class="trayectoria-extremo" :cx="trayectoria.x2" :cy="trayectoria.y2" r="1.1" />
@@ -445,51 +521,51 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
               <div v-else class="image-layer" :style="{ backgroundImage: `url(${frame.url})` }" />
               <div class="sky-vignette" />
               <div class="sky-grid" />
-              <div class="image-caption"><span class="caption-dot" /> {{ frame.illustrative ? 'IMAGEN ILUSTRATIVA · DATOS REALES PENDIENTES' : 'DATOS REALES' }}</div>
-              <div v-if="selectedObject.coordinates" class="coordinate-label" :title="selectedObject.coordinates.note"><IconoNawi nombre="alerta"  /> {{ selectedObject.coordinates.ra }} <span>/</span> {{ selectedObject.coordinates.dec }} · {{ selectedObject.coordinates.statusLabel }}</div>
-              <div v-else class="coordinate-label"><IconoNawi nombre="espera"  /> COORDENADAS PENDIENTES <span>/</span> NO VALIDADAS</div>
+              <div class="image-caption"><span class="caption-dot" /> {{ frame.illustrative ? t('viewer.captionIllustrative') : t('viewer.captionReal') }}</div>
+              <div v-if="selectedObject.coordinates" class="coordinate-label" :title="notaCoordenadas(selectedObject.coordinates)"><IconoNawi nombre="alerta" /> {{ selectedObject.coordinates.ra }} <span>/</span> {{ selectedObject.coordinates.dec }} · {{ rotuloCoordenadas(selectedObject.coordinates) }}</div>
+              <div v-else class="coordinate-label"><IconoNawi nombre="espera" /> {{ t('viewer.coordinatesPending') }} <span>/</span> {{ t('viewer.coordinatesUnvalidated') }}</div>
               <template v-if="frame.illustrative">
                 <div class="target-marker"><span /><i /></div>
-                <div class="target-label">OBJETO SELECCIONADO</div>
+                <div class="target-label">{{ t('viewer.selectedObject') }}</div>
               </template>
-              <div v-if="compare" class="compare-wipe" :class="{ 'is-real': !previousFrame.illustrative }" :style="previousFrame.illustrative ? { backgroundImage: `url(${previousFrame.url})` } : null"><img v-if="!previousFrame.illustrative" class="pixel-frame" :src="previousFrame.url" alt="" /><span class="wipe-label">ANTERIOR · {{ previousFrame.date }}{{ previousFrame.illustrative ? ' · ILUSTRATIVO' : '' }}</span><span class="wipe-line" /></div>
-              <div v-if="!frame.illustrative && suavizado" class="escala-aviso"><IconoNawi nombre="agua"  /> interpolado · no son píxeles originales</div>
-              <div class="image-date"><span>{{ frame.date }}</span><small>{{ frame.band }}</small><small v-if="frame.calidadOk === false" class="frame-calidad">calidad marcada como dudosa</small></div>
+              <div v-if="compare" class="compare-wipe" :class="{ 'is-real': !previousFrame.illustrative }" :style="previousFrame.illustrative ? { backgroundImage: `url(${previousFrame.url})` } : null"><img v-if="!previousFrame.illustrative" class="pixel-frame" :src="previousFrame.url" alt="" /><span class="wipe-label">{{ t('viewer.previous') }} · {{ previousFrame.date }}{{ previousFrame.illustrative ? t('viewer.illustrativeSuffix') : '' }}</span><span class="wipe-line" /></div>
+              <div v-if="!frame.illustrative && suavizado" class="escala-aviso"><IconoNawi nombre="agua" /> {{ t('viewer.interpolated') }}</div>
+              <div class="image-date"><span>{{ frame.date }}</span><small>{{ frame.band }}</small><small v-if="frame.calidadOk === false" class="frame-calidad">{{ t('viewer.dubiousQuality') }}</small></div>
             </div>
             <div class="timeline">
-              <div class="timeline-top"><span class="timeline-title"><IconoNawi nombre="historial"  /> {{ hayCuadrosReales ? 'LÍNEA DE TIEMPO' : 'LÍNEA DE TIEMPO ILUSTRATIVA' }}</span><span class="frame-counter">CUADRO <b>{{ String(frameIndex + 1).padStart(2, '0') }}</b> <span>/ {{ String(frames.length).padStart(2, '0') }}</span></span></div>
-              <input v-model.number="frameIndex" class="time-range" :style="{ '--progress': `${progressPercent}%` }" type="range" min="0" :max="frames.length - 1" step="1" aria-label="Elegir cuadro" />
+              <div class="timeline-top"><span class="timeline-title"><IconoNawi nombre="historial" /> {{ hayCuadrosReales ? t('timeline.title') : t('timeline.titleIllustrative') }}</span><span class="frame-counter">{{ t('timeline.frame') }} <b>{{ String(frameIndex + 1).padStart(2, '0') }}</b> <span>/ {{ String(frames.length).padStart(2, '0') }}</span></span></div>
+              <input v-model.number="frameIndex" class="time-range" :style="{ '--progress': `${progressPercent}%` }" type="range" min="0" :max="frames.length - 1" step="1" :aria-label="t('timeline.rangeAria')" />
               <div class="timeline-dates"><button v-for="(item, index) in frames" :key="item.date" class="date-tick" :class="{ current: index === frameIndex }" @click="frameIndex = index">{{ item.date.slice(5) }}</button></div>
             </div>
-            <div class="player-controls"><div class="transport"><button class="control-button" aria-label="Cuadro anterior" @click="frameIndex = (frameIndex - 1 + frames.length) % frames.length"><IconoNawi nombre="anterior"  /></button><button class="play-button" :aria-label="playing ? 'Pausar' : 'Reproducir'" @click="playing = !playing"><IconoNawi :nombre="playing ? 'pausa' : 'reproducir'" /></button><button class="control-button" aria-label="Cuadro siguiente" @click="frameIndex = (frameIndex + 1) % frames.length"><IconoNawi nombre="siguiente"  /></button><span class="play-caption">{{ playing ? 'REPRODUCIENDO' : 'RECORRER CUADROS' }}</span></div><div v-if="!frame.illustrative" class="zoom-controls" role="group" aria-label="Zoom del recorte y método de escalado"><span class="zoom-title" aria-hidden="true"><IconoNawi nombre="zoom"  /> zoom</span><button v-for="escala in ZOOMS" :key="escala" type="button" class="zoom-button" :class="{ 'is-active': zoomActivo === escala }" :aria-pressed="zoomActivo === escala" :aria-label="`Escala ${escala}x: recorte a ${TAMANO_RECORTE_PX * escala} píxeles`" :title="`${escala}x · ${TAMANO_RECORTE_PX * escala} px`" @click="zoom = escala">{{ escala }}x</button><button type="button" class="zoom-mode" :class="{ 'is-suave': suavizado }" :aria-pressed="suavizado" :aria-label="suavizado ? 'Modo suavizado activo: la imagen está interpolada y no muestra los píxeles originales. Cambiar a píxel real.' : 'Modo píxel real activo. Cambiar a suavizado, que interpola la imagen.'" :title="suavizado ? 'Interpolado: no son los píxeles originales' : 'Píxeles originales del recorte, sin interpolar'" @click="suavizado = !suavizado"><IconoNawi :nombre="suavizado ? 'agua' : 'pixel'" /><span>{{ suavizado ? 'suavizado' : 'píxel real' }}</span></button></div><button class="compare-button" :class="{ 'is-on': compare }" @click="compare = !compare"><IconoNawi nombre="comparar"  /> <span>{{ compare ? 'Cerrar comparación' : 'Antes y después' }}</span></button></div>
+            <div class="player-controls"><div class="transport"><button class="control-button" :aria-label="t('controls.prev')" @click="frameIndex = (frameIndex - 1 + frames.length) % frames.length"><IconoNawi nombre="anterior" /></button><button class="play-button" :aria-label="playing ? t('controls.pause') : t('controls.play')" @click="playing = !playing"><IconoNawi :nombre="playing ? 'pausa' : 'reproducir'" /></button><button class="control-button" :aria-label="t('controls.next')" @click="frameIndex = (frameIndex + 1) % frames.length"><IconoNawi nombre="siguiente" /></button><span class="play-caption">{{ playing ? t('controls.playing') : t('controls.idle') }}</span></div><div v-if="!frame.illustrative" class="zoom-controls" role="group" :aria-label="t('controls.zoomGroup')"><span class="zoom-title" aria-hidden="true"><IconoNawi nombre="zoom" /> {{ t('controls.zoomTitle') }}</span><button v-for="escala in ZOOMS" :key="escala" type="button" class="zoom-button" :class="{ 'is-active': zoomActivo === escala }" :aria-pressed="zoomActivo === escala" :aria-label="t('controls.zoomScale', { escala, pixeles: TAMANO_RECORTE_PX * escala })" :title="`${escala}x · ${TAMANO_RECORTE_PX * escala} px`" @click="zoom = escala">{{ escala }}x</button><button type="button" class="zoom-mode" :class="{ 'is-suave': suavizado }" :aria-pressed="suavizado" :aria-label="suavizado ? t('controls.smoothAria') : t('controls.pixelAria')" :title="suavizado ? t('controls.smoothTitle') : t('controls.pixelTitle')" @click="suavizado = !suavizado"><IconoNawi :nombre="suavizado ? 'agua' : 'pixel'" /><span>{{ suavizado ? t('controls.smooth') : t('controls.pixel') }}</span></button></div><button class="compare-button" :class="{ 'is-on': compare }" @click="compare = !compare"><IconoNawi nombre="comparar" /> <span>{{ compare ? t('controls.closeCompare') : t('controls.compare') }}</span></button></div>
           </div>
           <div v-else-if="sinCuadros" class="viewer panel">
-            <div class="viewer-toolbar"><div><span class="eyebrow">CAMPO CELESTE <span class="toolbar-slash">/</span> {{ selectedObject.tag }}</span><h2>{{ selectedObject.name }}</h2></div><button class="share-button" @click="shareView"><IconoNawi nombre="compartir"  /><span>Compartir vista</span></button></div>
+            <div class="viewer-toolbar"><div><span class="eyebrow">{{ t('viewer.skyField') }} <span class="toolbar-slash">/</span> {{ tagDe(selectedObject) }}</span><h2>{{ nombreObjeto }}</h2></div><button class="share-button" @click="shareView"><IconoNawi nombre="compartir" /><span>{{ t('viewer.share') }}</span></button></div>
             <div class="viewer-empty">
-              <span class="viewer-empty-icon"><IconoNawi nombre="sin-camara"  /></span>
+              <span class="viewer-empty-icon"><IconoNawi nombre="sin-camara" /></span>
               <div>
                 <h3>{{ tituloSinCuadros }}</h3>
-                <p v-if="motivoSinCuadros" class="viewer-empty-motivo">Motivo informado: {{ motivoSinCuadros }}</p>
-                <p v-else class="viewer-empty-motivo">No hay un motivo informado. Preferimos no mostrar imágenes de relleno para que no se confundan con datos.</p>
-                <p class="viewer-empty-meta"><span class="viewer-empty-chip">{{ selectedObject.kind }}</span><span v-if="estadoSinCuadros" class="viewer-empty-chip">estado: {{ estadoSinCuadros }}</span><span v-if="selectedObject.coordinates" class="viewer-empty-chip">{{ selectedObject.coordinates.statusLabel }}</span></p>
+                <p v-if="motivoSinCuadros" class="viewer-empty-motivo">{{ t('viewer.empty.motivo', { motivo: motivoSinCuadros }) }}</p>
+                <p v-else class="viewer-empty-motivo">{{ t('viewer.empty.sinMotivo') }}</p>
+                <p class="viewer-empty-meta"><span class="viewer-empty-chip">{{ tipoDe(selectedObject) }}</span><span v-if="estadoSinCuadros" class="viewer-empty-chip">{{ t('viewer.empty.estado', { estado: estadoSinCuadros }) }}</span><span v-if="selectedObject.coordinates" class="viewer-empty-chip">{{ rotuloCoordenadas(selectedObject.coordinates) }}</span></p>
               </div>
             </div>
           </div>
           <div v-else class="viewer panel">
-            <div class="viewer-toolbar"><div><span class="eyebrow">CAMPO CELESTE</span><h2>{{ loading ? 'Cargando catálogo…' : 'Catálogo no disponible' }}</h2></div></div>
-            <div class="sky-stage" style="display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center"><p style="max-width: 46ch; margin: 0; color: var(--text-secondary); font-size: 13px">{{ loadError || 'Preparando los objetos de demostración.' }}</p></div>
+            <div class="viewer-toolbar"><div><span class="eyebrow">{{ t('viewer.skyField') }}</span><h2>{{ loading ? t('catalog.loading') : t('viewer.errorPanel.title') }}</h2></div></div>
+            <div class="sky-stage" style="display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center"><p style="max-width: 46ch; margin: 0; color: var(--text-secondary); font-size: 13px">{{ loadError || t('viewer.errorPanel.preparing') }}</p></div>
           </div>
-          <RastroPanel v-if="selectedObject" :rastro="rastro" :nombre="selectedObject.name" />
+          <RastroPanel v-if="selectedObject" :rastro="rastro" :nombre="nombreObjeto" :pixel-arcsec="metadatos?.pixelArcsec ?? 6.15" />
           <section v-if="mostrarLatido && !loading && !loadError" class="latido-panel panel" aria-labelledby="latido-titulo">
-            <div class="latido-head"><div><span class="eyebrow">LATIDO</span><h2 id="latido-titulo">Curva de brillo</h2></div><span class="latido-chip">{{ selectedObject.tag }}</span></div>
-            <p class="latido-intro">{{ latido.puntos.length }} mediciones de brillo por fecha, tal como las entrega la misión. Nawi no recalcula ni corrige estos valores.</p>
-            <LatidoChart :puntos="latido.puntos" :nombre="selectedObject.name" :motivo="latido.motivo" :cargando="latido.estado === 'loading'" />
+            <div class="latido-head"><div><span class="eyebrow">{{ t('latido.eyebrow') }}</span><h2 id="latido-titulo">{{ t('latido.title') }}</h2></div><span class="latido-chip">{{ tagDe(selectedObject) }}</span></div>
+            <p class="latido-intro">{{ t('latido.intro', { n: latido.puntos.length }) }}</p>
+            <LatidoChart :puntos="latido.puntos" :nombre="nombreObjeto" :motivo="latido.motivo" :cargando="latido.estado === 'loading'" />
           </section>
-          <div class="below-viewer"><span><IconoNawi nombre="info"  /> {{ ready ? selectedObject.demoUse : 'Esta experiencia está en desarrollo.' }} <span class="caption-divider">·</span> {{ dataSourceNote }}</span><span class="keyboard-hint">NAVEGÁ CON <kbd>←</kbd> <kbd>→</kbd></span></div>
+          <div class="below-viewer"><span><IconoNawi nombre="info" /> {{ ready ? usoObjeto : t('below.dev') }} <span class="caption-divider">·</span> {{ dataSourceNote }}</span><span class="keyboard-hint">{{ t('below.keyboard') }} <kbd>←</kbd> <kbd>→</kbd></span></div>
       </section>
     </div>
 
-    <footer class="footer"><span>ÑAWI <span class="footer-dot">·</span> UN OJO INFRARROJO PARA TODOS</span><span>DATOS DE MISIÓN SPHEREx <IconoNawi nombre="flecha-externa"  /></span></footer>
-    <div v-if="notice" class="toast-note" role="status"><IconoNawi nombre="check-circulo"  /> {{ notice }}</div>
+    <footer class="footer"><span>ÑAWI <span class="footer-dot">·</span> {{ t('footer.motto') }}</span><span>{{ t('footer.mission') }} <IconoNawi nombre="flecha-externa" /></span></footer>
+    <div v-if="notice" class="toast-note" role="status"><IconoNawi nombre="check-circulo" /> {{ notice }}</div>
   </main>
 </template>

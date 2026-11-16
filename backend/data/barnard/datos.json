@@ -11,6 +11,7 @@
   "tamano_px": 58,
   "estado": "ok",
   "motivo": "",
+  "motivo_codigo": "",
   "cuadros": [
     {
       "fecha": "2025-08-15T20:46:08Z",
