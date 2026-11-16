@@ -553,7 +553,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
           </div>
           <div v-else class="viewer panel">
             <div class="viewer-toolbar"><div><span class="eyebrow">{{ t('viewer.skyField') }}</span><h2>{{ loading ? t('catalog.loading') : t('viewer.errorPanel.title') }}</h2></div></div>
-            <div class="sky-stage" style="display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center"><p style="max-width: 46ch; margin: 0; color: var(--text-secondary); font-size: 13px">{{ loadError || t('viewer.errorPanel.preparing') }}</p></div>
+            <div class="sky-stage" style="display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center"><p style="max-width: 46ch; margin: 0; color: var(--nawi-sky-ink-mute); font-size: 13px">{{ loadError || t('viewer.errorPanel.preparing') }}</p></div>
           </div>
           <RastroPanel v-if="selectedObject" :rastro="rastro" :nombre="nombreObjeto" :pixel-arcsec="metadatos?.pixelArcsec ?? 6.15" />
           <section v-if="mostrarLatido && !loading && !loadError" class="latido-panel panel" aria-labelledby="latido-titulo">

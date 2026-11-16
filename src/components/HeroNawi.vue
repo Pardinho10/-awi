@@ -20,7 +20,7 @@
  * que las letras se lean a través. Es lo que hace que el cover respire en vez
  * de verse como un encabezado con adornos al costado.
  */
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import IconoNawi from './IconoNawi.vue';
 
 const props = defineProps({
@@ -67,10 +67,30 @@ const t = computed(() => ({ ...TEXTOS_BASE, ...props.textos }));
    escritorio, 4x tablet, 3x móvil) para que cada píxel del dato caiga en un
    bloque exacto. El tamaño vive en el CSS: pasado inline, ganaría la media
    query y el recorte desbordaría en móvil. */
+
+/* La deriva del fondo se detiene cuando el cover sale de pantalla. Es la única
+   capa del hero que conviene pausar: los anillos son trazos de 1px y las luces
+   son dos puntos, pero el fondo es una capa a pantalla completa y dejarla
+   animando fuera de vista gasta GPU y batería para nadie.
+   Sin `IntersectionObserver` no se agrega la clase y la animación sigue: el
+   estado por defecto es el que funciona. */
+const cover = ref(null);
+let observador = null;
+
+onMounted(() => {
+  if (!('IntersectionObserver' in window) || !cover.value) return;
+  observador = new IntersectionObserver(
+    ([entrada]) => cover.value.classList.toggle('is-fuera', !entrada.isIntersecting),
+    { threshold: 0 }
+  );
+  observador.observe(cover.value);
+});
+
+onBeforeUnmount(() => observador?.disconnect());
 </script>
 
 <template>
-  <section class="cover" id="inicio">
+  <section class="cover" id="inicio" ref="cover">
     <!-- Capa 1: geometría orbital. -->
     <div class="cover-orbitas" aria-hidden="true">
       <span class="cover-anillo es-1" />
@@ -81,19 +101,22 @@ const t = computed(() => ({ ...TEXTOS_BASE, ...props.textos }));
       <span class="cover-viajero viajero-plasma"><i class="cover-luz es-plasma" /></span>
     </div>
 
-    <!-- Capa 2: archivo, no dato. -->
+    <!-- Capa 2: archivo, no dato. El contenedor interno existe para mover la
+         imagen sin arrastrar su filtro: ver la nota en nawi.css. -->
     <div class="cover-fondo" aria-hidden="true">
-      <img
-        class="cover-fondo-img"
-        src="../assets/cielo-wise.jpg"
-        srcset="../assets/cielo-wise-1100.jpg 900w, ../assets/cielo-wise.jpg 1600w"
-        sizes="100vw"
-        alt=""
-        width="1600"
-        height="780"
-        decoding="async"
-        fetchpriority="high"
-      />
+      <div class="cover-fondo-capa">
+        <img
+          class="cover-fondo-img"
+          src="../assets/cielo-wise.jpg"
+          srcset="../assets/cielo-wise-1100.jpg 900w, ../assets/cielo-wise.jpg 1600w"
+          sizes="100vw"
+          alt=""
+          width="1600"
+          height="780"
+          decoding="async"
+          fetchpriority="high"
+        />
+      </div>
       <span class="cover-fondo-velo" />
     </div>
 

@@ -1972,9 +1972,28 @@ html::-webkit-scrollbar-thumb:hover {
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  /* La deriva amplía la imagen un 6%: sin esto el sobrante se sale del cover.
+     No se usa `inset: -3%` en el contenedor porque entonces el velo, que es
+     hijo suyo, tampoco cubriría hasta el borde. */
+  overflow: hidden;
+}
+
+/* Mueve la imagen, no el filtro. `transform` sobre el mismo elemento que lleva
+   `filter` re-renderiza el filtro en cada frame; separarlos deja el filtro
+   aplicado una sola vez sobre una capa ya rasterizada. */
+.hx-theme .cover-fondo-capa {
+  width: 100%;
+  height: 100%;
+  /* La deriva dura 3 minutos: es más lenta que el anillo de 240s a propósito.
+     A esa velocidad no se lee como animación, se lee como que la página
+     respira, que es lo único que un fondo de archivo puede permitirse hacer
+     sin empezar a afirmar cosas sobre sí mismo. */
+  animation: cover-deriva 180s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .hx-theme .cover-fondo-img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1984,6 +2003,26 @@ html::-webkit-scrollbar-thumb:hover {
      oscurecido, la imagen desaparece y el cover queda en negro plano. El
      trabajo de dar contraste al texto lo hace el velo, no el filtro. */
   filter: saturate(0.8) brightness(0.92) contrast(1.04);
+}
+
+/* Deriva: un paneo apenas perceptible sobre el recorte del cielo. El recorrido
+   es corto (2.4% del ancho) porque la imagen es un mapa, no un paisaje: si se
+   mueve mucho, la Vía Láctea y las nebulosas se despegan del titular y el fondo
+   empieza a competir con los anillos. La escala sube lo justo para que no
+   aparezca el borde al desplazar.
+   `alternate` evita el salto de loop: el mismo recorrido de ida y vuelta no
+   tiene costura que reparar. */
+@keyframes cover-deriva {
+  from { transform: scale(1.06) translate3d(0, 0, 0); }
+  to   { transform: scale(1.06) translate3d(-2.4%, 1%, 0); }
+}
+
+/* Con el cover fuera de pantalla la deriva se detiene. No se usa `paused`: al
+   volver, `paused` reanudaría desde donde quedó, lo que está bien, pero el
+   navegador sigue reservando la capa. `animation-play-state` es lo que
+   corresponde y no cambia el punto del recorrido. */
+.hx-theme .cover.is-fuera .cover-fondo-capa {
+  animation-play-state: paused;
 }
 
 /* Velo radial + vertical: oscurece el centro y los bordes para que el titular
@@ -2010,6 +2049,26 @@ html::-webkit-scrollbar-thumb:hover {
       color-mix(in srgb, var(--hx-void) 86%, transparent) 78%,
       color-mix(in srgb, var(--hx-void) 94%, transparent) 92%,
       var(--hx-void) 100%);
+}
+
+/* En tema claro el velo NO puede usar --hx-void: ese token es claro y lavaba
+   la foto (el titular y el riel de cifras, que son de tinta clara fija,
+   desaparecían). El cover es una pieza oscura en los dos temas: la imagen es
+   nocturna y el texto que va encima siempre es claro. Se usa --nawi-sky, que
+   es el negro índigo del recorte y no cambia con el tema. */
+html[data-theme="light"] .hx-theme .cover-fondo-velo {
+  background:
+    radial-gradient(ellipse 42% 34% at 50% 50%,
+      color-mix(in srgb, var(--nawi-sky) 86%, transparent) 0%,
+      color-mix(in srgb, var(--nawi-sky) 58%, transparent) 62%,
+      transparent 100%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--nawi-sky) 78%, transparent) 0%,
+      transparent 26%,
+      transparent 50%,
+      color-mix(in srgb, var(--nawi-sky) 88%, transparent) 78%,
+      color-mix(in srgb, var(--nawi-sky) 96%, transparent) 92%,
+      var(--nawi-sky) 100%);
 }
 
 /* --- Contenido --------------------------------------------------------- */
@@ -2326,6 +2385,23 @@ html::-webkit-scrollbar-thumb:hover {
         var(--hx-void) 100%);
   }
 
+  /* Mismo criterio que en escritorio: en tema claro el velo móvil usa el negro
+     del recorte (--nawi-sky) y no el fondo claro del tema, o la columna de
+     texto se lava contra las nebulosas. */
+  html[data-theme="light"] .hx-theme .cover-fondo-velo {
+    background:
+      radial-gradient(ellipse 96% 56% at 50% 40%,
+        color-mix(in srgb, var(--nawi-sky) 86%, transparent) 0%,
+        color-mix(in srgb, var(--nawi-sky) 62%, transparent) 68%,
+        transparent 100%),
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--nawi-sky) 78%, transparent) 0%,
+        transparent 26%,
+        transparent 50%,
+        color-mix(in srgb, var(--nawi-sky) 88%, transparent) 78%,
+        var(--nawi-sky) 100%);
+  }
+
   /* El recorte deja de flotar: en columna se apoya debajo del titular y se
      alinea al centro, que es el eje del cover. */
   .hx-theme .cover-dato {
@@ -2396,7 +2472,17 @@ html::-webkit-scrollbar-thumb:hover {
   .hx-theme .cover-anillo.es-3,
   .hx-theme .cover-anillo.es-4,
   .hx-theme .cover-viajero,
-  .hx-theme .cover-luz.es-solar {
+  .hx-theme .cover-luz.es-solar,
+  .hx-theme .cover-fondo-capa {
+    animation: none;
+  }
+}
+
+/* En móvil la deriva no aporta: la imagen se recorta a una franja, el paneo se
+   lee como inestabilidad y el ahorro de batería importa más. Queda el fondo
+   quieto y el resto del cover animado como siempre. */
+@media (max-width: 900px) {
+  .hx-theme .cover-fondo-capa {
     animation: none;
   }
 }
