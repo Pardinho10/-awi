@@ -18,6 +18,16 @@ SALIDA = RAIZ / slug / "frames"
 SALIDA.mkdir(parents=True, exist_ok=True)
 N, PIX = 58, 6.15
 
+ruta_json = RAIZ / slug / "datos.json"
+try:
+    datos_anteriores = json.loads(ruta_json.read_text(encoding="utf-8"))
+except (OSError, json.JSONDecodeError):
+    datos_anteriores = {}
+latido_anterior = datos_anteriores.get("latido", [])
+
+# Conservar la fotometría ya calculada para observaciones que sigan presentes.
+# exportar_cuadros reconstruye los recortes, pero no debe borrar el latido que
+# genera pipeline/latido.py al volver a ejecutarse.
 datos_json = dict(
     slug=slug, nombre=o["nombre"], tipo=o["tipo"],
     centro={"ra_deg": round(centro.ra.deg, 6), "dec_deg": round(centro.dec.deg, 6)},
@@ -129,6 +139,15 @@ for i, c in enumerate(cuadros):
     ))
     print(f"  {c['fecha'][:10]}  señal en la posición esperada: "
           f"{'sin dato' if snr is None else f'{snr:.1f} sigma'}")
+
+fechas_cuadros = {cuadro["fecha"][:19] for cuadro in datos_json["cuadros"]}
+if isinstance(latido_anterior, list):
+    datos_json["latido"] = [
+        punto for punto in latido_anterior
+        if isinstance(punto, dict)
+        and isinstance(punto.get("fecha"), str)
+        and punto["fecha"][:19] in fechas_cuadros
+    ]
 
 # Registro auditable de la visualización aplicada a los PNG.
 # El valor escalar guardado es un asinh con estos parámetros; sin este bloque

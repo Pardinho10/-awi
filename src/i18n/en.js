@@ -6,7 +6,7 @@ export default {
     brandHome: 'Ñawi, home',
     themeToDark: 'Switch to dark mode',
     themeToLight: 'Switch to light mode',
-    help: 'About Ñawi',
+    glosario: 'Glossary of terms',
     langSwitch: 'Change language',
     search: 'Search object',
     objectList: 'Astronomical objects',
@@ -15,6 +15,60 @@ export default {
   },
   brand: {
     mission: 'INFRARED EXPLORER',
+  },
+  glosario: {
+    eyebrow: 'GLOSSARY',
+    titulo: 'What each thing means',
+    cerrar: 'Close the glossary',
+    intro: 'The terms and symbols on screen, one line each.',
+    terminos: {
+      infrarrojo: {
+        nombre: 'Infrared',
+        definicion: 'Light the human eye cannot see, with a longer wavelength than red. Cold objects — dust, gas, brown dwarfs — shine brighter in infrared than in visible light, which is why SPHEREx looks there.',
+      },
+      longitudOnda: {
+        nombre: 'Wavelength (μm)',
+        definicion: 'The exact “colour” of the light captured in each frame, in micrometres. One μm is a thousandth of a millimetre. SPHEREx observes at 102 different wavelengths.',
+      },
+      banda: {
+        nombre: 'Band',
+        definicion: 'A range of wavelengths grouped together for practical work. Two frames from the same band can be compared; frames from different bands cannot, without saying so.',
+      },
+      campo: {
+        nombre: 'Field of view (′)',
+        definicion: 'The size of the patch of sky inside the crop, in arcminutes. One arcminute is a sixtieth of a degree; the full Moon measures about 30.',
+      },
+      segundoArco: {
+        nombre: 'Arcsecond (″)',
+        definicion: 'The unit used to measure how far an object moves across the sky. It is a sixtieth of an arcminute: 3600 arcseconds make one degree. For scale, Barnard’s Star moves 10.4″ per year.',
+      },
+      movimientoPropio: {
+        nombre: 'Proper motion (″/yr)',
+        definicion: 'How far a star shifts across the sky over one year, with Earth’s own motion already subtracted. Most move very little; nearby ones, like Barnard’s, show up between frames.',
+      },
+      brillo: {
+        nombre: 'Brightness (Jy)',
+        definicion: 'The energy arriving from the object, measured in janskys (Jy). It is a measured value, not an invented magnitude: on the brightness curve every point is a measurement with its error.',
+      },
+      sigma: {
+        nombre: 'σ (signal)',
+        definicion: 'How many times above the background noise the detection sits. Below 5 σ is considered unreliable: that is why some objects are marked as “weak signal”.',
+      },
+      interpolado: {
+        nombre: 'Interpolated',
+        definicion: 'When the crop is enlarged with smoothing, the browser makes up pixels that are not in the file. The interface says so because those pixels are not data: the original crop is 58×58.',
+      },
+      latido: {
+        nombre: 'Pulse',
+        definicion: 'The brightness curve of an object over time. Variable stars change brightness without moving; the pulse shows that change date by date.',
+      },
+      rastro: {
+        nombre: 'Trail',
+        definicion: 'The displacement measured between the first and last frame, in arcseconds and with its direction. It is compared against the published proper motion to check whether the method agrees.',
+      },
+    },
+    pie: 'The data belongs to the missions that publish it. Ñawi gathers it and shows it exactly as it arrives: it does not recalculate or correct it.',
+    pieFuentes: 'NASA/IPAC IRSA (SPHEREx) · Gaia (ESA) · SIMBAD (CDS)',
   },
   hero: {
     line1: 'The sky',
@@ -26,8 +80,7 @@ export default {
     statMonthsValue: '6',
     statMonthsUnit: 'months',
     statMonthsCaption: 'between sky maps',
-    creditPrefix: 'Background: all-sky infrared map, WISE ·',
-    creditTail: 'archive image, not a Ñawi observation',
+    creditNotice: 'Archive image, not a Ñawi observation',
     dataLabel: 'Real SPHEREx observation',
     dataScale: '58×58 px, not interpolated',
     scrollHint: 'Explore',

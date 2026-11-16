@@ -6,17 +6,17 @@
  *
  *   1. GEOMETRÍA — anillos orbitales con dos luces que los recorren. Es
  *      geometría pura, no una foto: no afirma nada sobre el cielo.
- *   2. FONDO — el mapa de todo el cielo de WISE (NASA/JPL-Caltech), en
- *      infrarrojo. Es imagen de archivo: ilustra la atmósfera del producto,
- *      NO es una observación de Ñawi. Por eso lleva crédito visible. Deriva
+ *   2. FONDO — una imagen de archivo de la Vía Láctea. Ilustra la atmósfera
+ *      del producto, NO es una observación de Ñawi. Por eso lleva la
+ *      aclaración visible. Deriva
  *      lentamente (60s, ida y vuelta): es la única capa que puede moverse sin
  *      afirmar nada, porque el movimiento es puramente óptico.
  *   3. DATO — el recorte real de SPHEREx que el visitante está mirando. Es
  *      lo único de la pantalla que es dato propio, va sin filtro encima y
  *      lleva su etiqueta.
  *
- * Si alguien confunde el fondo con el dato, el hero miente. El crédito y la
- * etiqueta existen para que no pase.
+ * Si alguien confunde el fondo con el dato, el hero miente. La aclaración y
+ * la etiqueta existen para que no pase.
  *
  * El tipo se centra y se superpone a los anillos: el centro queda vacío para
  * que las letras se lean a través. Es lo que hace que el cover respire en vez
@@ -55,9 +55,7 @@ const TEXTOS_BASE = {
   cifra2: '6',
   cifra2Unidad: 'meses',
   cifra2Rotulo: 'entre mapeos del cielo',
-  credito: 'Fondo: mapa de todo el cielo en infrarrojo, WISE ·',
-  creditoFuente: 'NASA/JPL-Caltech',
-  creditoAviso: '· imagen de archivo, no una observación de Ñawi',
+  creditoAviso: 'Imagen de archivo, no una observación de Ñawi',
   datoEtiqueta: 'Observación real de SPHEREx',
   datoEscala: '58×58 px, sin interpolar',
   bajar: 'Explorar',
@@ -109,12 +107,12 @@ onBeforeUnmount(() => observador?.disconnect());
       <div class="cover-fondo-capa">
         <img
           class="cover-fondo-img"
-          src="../assets/cielo-wise.jpg"
-          srcset="../assets/cielo-wise-1100.jpg 900w, ../assets/cielo-wise.jpg 1600w"
+          src="../assets/cielo-vialactea-1500.webp"
+          srcset="../assets/cielo-vialactea-1100.webp 1100w, ../assets/cielo-vialactea-1500.webp 1500w, ../assets/cielo-vialactea.webp 2100w"
           sizes="100vw"
           alt=""
-          width="1600"
-          height="780"
+          width="2100"
+          height="1400"
           decoding="async"
           fetchpriority="high"
         />
@@ -173,9 +171,7 @@ onBeforeUnmount(() => observador?.disconnect());
       </div>
     </div>
 
-    <!-- Crédito: obligatorio, la imagen de fondo no es dato de Ñawi. -->
-    <p class="cover-credito">
-      {{ t.credito }} <span>{{ t.creditoFuente }}</span> · {{ t.creditoAviso }}
-    </p>
+    <!-- Aclaración: obligatoria, la imagen de fondo no es dato de Ñawi. -->
+    <p class="cover-credito">{{ t.creditoAviso }}</p>
   </section>
 </template>

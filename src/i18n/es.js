@@ -8,7 +8,7 @@ export default {
     brandHome: 'Ñawi, inicio',
     themeToDark: 'Cambiar a modo oscuro',
     themeToLight: 'Cambiar a modo claro',
-    help: 'Acerca de Ñawi',
+    glosario: 'Glosario de términos',
     langSwitch: 'Cambiar idioma',
     search: 'Buscar objeto',
     objectList: 'Objetos astronómicos',
@@ -17,6 +17,60 @@ export default {
   },
   brand: {
     mission: 'EXPLORADOR INFRARROJO',
+  },
+  glosario: {
+    eyebrow: 'GLOSARIO',
+    titulo: 'Qué significa cada cosa',
+    cerrar: 'Cerrar el glosario',
+    intro: 'Los términos y símbolos que aparecen en la pantalla, en una línea cada uno.',
+    terminos: {
+      infrarrojo: {
+        nombre: 'Infrarrojo',
+        definicion: 'Luz que el ojo humano no ve, con longitud de onda más larga que la roja. Los objetos fríos —polvo, gas, enanas marrones— brillan más en infrarrojo que en luz visible, y por eso SPHEREx mira ahí.',
+      },
+      longitudOnda: {
+        nombre: 'Longitud de onda (μm)',
+        definicion: 'El «color» exacto de la luz que captó cada cuadro, en micrómetros. Un μm es la milésima parte de un milímetro. SPHEREx observa en 102 longitudes de onda distintas.',
+      },
+      banda: {
+        nombre: 'Banda',
+        definicion: 'Un rango de longitudes de onda que se agrupa para trabajar. Dos cuadros de la misma banda se pueden comparar; de bandas distintas, no sin avisarlo.',
+      },
+      campo: {
+        nombre: 'Campo de visión (′)',
+        definicion: 'El tamaño del trozo de cielo que entra en el recorte, en minutos de arco. Un minuto de arco es la treintava parte de un grado; la Luna llena mide unos 30.',
+      },
+      segundoArco: {
+        nombre: 'Segundo de arco (″)',
+        definicion: 'La unidad con la que se mide lo que se mueve un objeto en el cielo. Es la sesentava parte de un minuto de arco: 3600 segundos de arco equivalen a un grado. Para comparar: la estrella de Barnard se mueve 10,4″ por año.',
+      },
+      movimientoPropio: {
+        nombre: 'Movimiento propio (″/año)',
+        definicion: 'Cuánto se desplaza una estrella en el cielo a lo largo de un año, ya descontado el movimiento de la Tierra. Casi todas se mueven muy poco; las cercanas, como Barnard, se notan entre cuadros.',
+      },
+      brillo: {
+        nombre: 'Brillo (Jy)',
+        definicion: 'La energía que llega del objeto, medida en janskys (Jy). Es un dato medido, no una magnitud inventada: en la curva de brillo cada punto es una medición con su error.',
+      },
+      sigma: {
+        nombre: 'σ (señal)',
+        definicion: 'Cuántas veces por encima del ruido de fondo está la detección. Menos de 5 σ se considera poco confiable: es el motivo por el que algunos objetos figuran como «señal débil».',
+      },
+      interpolado: {
+        nombre: 'Interpolado',
+        definicion: 'Cuando se agranda el recorte con suavizado, el navegador inventa píxeles que no están en el archivo. La interfaz lo avisa porque esos píxeles no son dato: el recorte original mide 58×58.',
+      },
+      latido: {
+        nombre: 'Latido',
+        definicion: 'La curva de brillo de un objeto a lo largo del tiempo. Las estrellas variables cambian de brillo sin moverse de lugar; el latido muestra ese cambio fecha por fecha.',
+      },
+      rastro: {
+        nombre: 'Rastro',
+        definicion: 'El desplazamiento medido entre el primer y el último cuadro, en segundos de arco y con su dirección. Se compara con el movimiento propio publicado para ver si el método coincide.',
+      },
+    },
+    pie: 'Los datos son de las misiones que los publican. Ñawi los reúne y los muestra tal como llegan: no los recalcula ni los corrige.',
+    pieFuentes: 'NASA/IPAC IRSA (SPHEREx) · Gaia (ESA) · SIMBAD (CDS)',
   },
   hero: {
     line1: 'El cielo',
@@ -28,8 +82,7 @@ export default {
     statMonthsValue: '6',
     statMonthsUnit: 'meses',
     statMonthsCaption: 'entre mapeos del cielo',
-    creditPrefix: 'Fondo: mapa de todo el cielo en infrarrojo, WISE ·',
-    creditTail: 'imagen de archivo, no una observación de Ñawi',
+    creditNotice: 'Imagen de archivo, no una observación de Ñawi',
     dataLabel: 'Observación real de SPHEREx',
     dataScale: '58×58 px, sin interpolar',
     scrollHint: 'Explorar',

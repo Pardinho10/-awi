@@ -157,10 +157,13 @@ análisis precalculados.
 
 Notas de honestidad:
 
-- Hoy **solo `rw-aurigae`** tiene curva (7 puntos). En el resto viene `[]`.
+- Hoy **solo `rw-aurigae`** tiene curva (7 puntos), publicados en `backend/data/rw-aurigae/datos.json`. En el resto viene `[]`.
 - El frontend descarta puntos sin fecha o sin brillo y no interpola nada.
 - Un `latido` vacío **no** significa que el objeto no tenga datos: `barnard` tiene
   recortes y `latido: []`. Son estados distintos y se reportan por separado.
+- `backend/pipeline/exportar_cuadros.py` conserva los puntos de latido ya calculados
+  cuyas fechas sigan en los cuadros. Si cambian las observaciones, recalcular con
+  `backend/.venv/bin/python backend/pipeline/latido.py <slug>`.
 
 ### 3.3 `rastro` — desplazamiento medido
 

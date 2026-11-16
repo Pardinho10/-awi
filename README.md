@@ -208,10 +208,15 @@ npm run check:motivos    # motivos del backend con código y clave de i18n
   predice el catálogo, con una frase en lenguaje llano. El resto de los objetos no tiene
   desplazamiento medido.
 - `revelar` y `conocido` todavía vienen vacíos en los cinco objetos.
-- `latido` (curva de brillo) hoy solo existe para **RW Aurigae**; cuando un objeto no tiene
-  curva, el detalle responde `latido: []` y `latidoEstado: "sin_datos"` sin inventar puntos.
-  Que el latido esté vacío **no** significa que el objeto no tenga datos: el `estado` del
-  objeto depende de sus cuadros.
+- `latido` (curva de brillo) hoy solo existe para **RW Aurigae**: el backend publica
+  **7 mediciones** con brillo, incertidumbre y longitud de onda, calculadas sobre sus
+  observaciones y mostradas sin recalcular en el frontend. Los demás objetos responden
+  `latido: []`; que el latido esté vacío **no** significa que el objeto no tenga datos:
+  el `estado` depende de sus cuadros.
+- Al regenerar los recortes de un objeto con `backend/pipeline/exportar_cuadros.py`, se
+  conserva el latido existente para las fechas que sigan presentes. Si cambian las
+  observaciones, hay que volver a ejecutar `backend/pipeline/latido.py <slug>` para
+  actualizar las mediciones.
 
 ## Uso de inteligencia artificial
 

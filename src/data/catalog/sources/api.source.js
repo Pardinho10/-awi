@@ -247,10 +247,9 @@ export const apiSource = Object.freeze({
    * Devuelve el detalle normalizado (../adapters.js -> toDetalleVista):
    *   { slug, estado, motivo, latido, cuadros, rastro, revelar, conocido }
    *
-   * Hoy el backend expone `latido: []` (exportar_cuadros.py lo deja vacío a
-   * propósito), así que sin datos reales la respuesta es estado 'sin_datos' y
-   * latido []; no se inventan puntos. Cuando Cecilia llene el campo, esta
-   * función lo entrega sin cambios de código.
+   * El backend publica en `latido` las mediciones precalculadas. RW Aurigae
+   * tiene actualmente 7 puntos; los demás objetos devuelven `[]`. La fuente
+   * normaliza los puntos sin inventarlos ni recalcularlos.
    */
   async getDetalleObjeto(slug) {
     if (typeof slug !== 'string' || !slug.trim()) {

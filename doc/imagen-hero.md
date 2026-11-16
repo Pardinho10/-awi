@@ -2,46 +2,63 @@
 
 ## Archivo
 
-`src/assets/cielo-wise.jpg` (1600×780) y `src/assets/cielo-wise-1100.jpg` (900×439).
+`src/assets/cielo-vialactea.webp` (2100×1400) y las variantes
+`cielo-vialactea-1500.webp` (1500×1000) y `cielo-vialactea-1100.webp` (1100×733),
+servidas en un `srcset` de tres anchos.
+
+Los JPEG anteriores (`cielo-wise.jpg`, `cielo-wise-1100.jpg`) siguen en el
+repositorio sin uso, conservados por pedido explícito. No se referencian desde
+el código.
 
 ## Qué es
 
-Mapa de **todo el cielo en infrarrojo**, mosaico de la misión **WISE**
-(Wide-field Infrared Survey Explorer) de NASA, publicado como parte del
-All-Sky Data Release de 2012.
+Fotografía de la Vía Láctea: la banda galáctica cruza el encuadre en diagonal,
+con el núcleo y las nebulosas rojizas sobre el centro. Es imagen de archivo.
 
-- **Producto**: PIA15481 — *Mapping the Infrared Universe: The Entire WISE Sky*
-- **Crédito**: NASA / JPL-Caltech
-- **Original**: `https://science.nasa.gov/wp-content/uploads/2023/09/jpegpia15481-2.jpg` (10000×5030 px, 6,8 MB)
+**No es una observación de Ñawi ni de SPHEREx.** El hero la distingue con la
+aclaración visible al pie del texto: *«Imagen de archivo, no una observación de
+Ñawi»*.
 
-## Licencia
+### Sobre el crédito
 
-NASA no registra derechos de autor sobre su material en Estados Unidos y el
-uso está permitido, incluido el comercial, siempre que se acredite la fuente y
-no se sugiera endoso. La política de imágenes de JPL lo confirma: las imágenes
-de sitios públicos `jpl.nasa.gov` pueden usarse para cualquier propósito sin
-permiso previo.
+La versión anterior de este fondo era el mapa de todo el cielo de **WISE**
+(NASA/JPL-Caltech) y llevaba ese crédito al pie. Al reemplazar la imagen por
+esta fotografía ese crédito dejó de ser cierto —no es una imagen de WISE—, así
+que se retiró la atribución de origen y se conservó únicamente la aclaración de
+que es archivo y no dato propio. Esa aclaración es obligatoria y no debe
+quitarse: sin ella el hero sugiere que el fondo es una observación del producto.
 
-- https://www.nasa.gov/nasa-brand-center/images-and-media/
-- https://www.jpl.nasa.gov/jpl-image-use-policy/
-
-**Condición que cumplimos**: el crédito `NASA/JPL-Caltech` es visible en el
-hero, junto con la aclaración de que es imagen de archivo.
+Si en el futuro se incorpora una imagen con autoría y licencia conocidas, hay
+que agregar el crédito correspondiente. Mientras la procedencia de esta foto no
+esté documentada, **no debe atribuirse a ninguna misión ni institución**.
 
 ## Cómo se procesó
 
-Recorte de la franja central del original —la Vía Láctea y las nebulosas— para
-evitar el borde del óvalo de la proyección, que se veía como un marco. Después
-se reescaló y comprimió en dos anchos para `srcset`.
+Fuente: `milky-way-full-stars-space.jpg`, 6000×4000 px, 13,8 MB, calidad JPEG
+100. La orientación es 3:2, así que se mantiene la proporción y el recorte a
+cover lo hace el CSS (`object-fit: cover`, `object-position: center 48%`).
 
 ```
-caja = (2630, 1359, 7370, 3671)   # 4740×2312 px del original
-1600×780  → calidad 76, progresivo, optimizado  (194 KB)
- 900×439  → calidad 74, progresivo, optimizado  ( 50 KB)
+2000→2100 px de ancho, LANCZOS, desenfoque gaussiano 0.4, WebP q74  → 221 KB
+1500 px de ancho,          idem                          WebP q74  →  97 KB
+1100 px de ancho,          idem                          WebP q78  →  58 KB
 ```
 
-Los JPEG se sirven tal cual: **no se convirtieron a WebP** porque esta máquina
-no tiene conversor de imágenes disponible.
+**Por qué WebP y no JPEG**: la imagen original pesa 13,8 MB, inviable para el
+hero. En WebP se sirve en tres anchos con un peso total de 375 KB y el navegador
+descarga sólo uno.
+
+**Por qué el desenfoque de 0.4 px**: la foto tiene grano de ISO alto en todas
+las zonas oscuras. El grano es información de alta frecuencia que el códec gasta
+en preservar, y a tamaño de pantalla no aporta nada. Un gaussiano de 0.4 px lo
+atenúa sin tocar las estrellas grandes ni las nebulosas, y baja el archivo un
+~22% (273 KB → 221 KB en el ancho mayor). Verificado a 1:1 con el brillo
+levantado 2,4×: sin pérdida visible de detalle.
+
+**Calidad elegida por prueba, no por defecto**: en un recorte 1:1 sobre la zona
+más poblada de estrellas, q70 ya se sostiene y q76 es limpio. Se usa q74 en los
+anchos grandes y q78 en el chico, porque a 1100 px el archivo es tan liviano que
+no vale la pena comprimir más.
 
 ## La animación
 
@@ -50,37 +67,38 @@ deriva lentamente. Es un Ken Burns de `scale 1.04 → 1.09` con paneo de 2.8%,
 `60s ease-in-out alternate`, sobre una capa contenedora (`.cover-fondo-capa`)
 para no re-renderizar el `filter` en cada frame.
 
-**El archivo no cambió por esto.** La deriva es transformación CSS sobre el JPEG
-existente: no hay video, no hay GIF, no hay sprite. El peso del fondo sigue
-siendo 194 KB + 50 KB. Se anima lo que ya estaba, en vez de reemplazarlo por un
-asset más pesado.
+**El archivo no cambió por esto.** La deriva es transformación CSS sobre el WebP
+existente: no hay video, no hay GIF, no hay sprite. Se anima lo que ya estaba,
+en vez de reemplazarlo por un asset más pesado.
 
 La animación se apaga en `prefers-reduced-motion`, en `max-width: 900px` y
 cuando el cover sale de pantalla. Detalle y razones: `DESIGN.md` §7.
 
-## Reemplazar la imagen
+## Contraste
 
-El recorte original está en `https://science.nasa.gov/wp-content/uploads/2023/09/jpegpia15481-2.jpg`.
-La caja usada es `(2630, 1359, 7370, 3671)` sobre las 10000×5030 px del archivo.
-Si algún día se cambia el encuadre hay que volver a medir el contraste del
-titular en los dos extremos de la deriva, no en un solo frame: el velo está
-afinado para esta composición y la banda galáctica cruza en diagonal.
+La foto es más oscura que el mapa de WISE anterior (luma media 25 contra 32), y
+el `filter` del CSS la oscurece otro tanto (`saturate .8 brightness .92 contrast
+1.04`). Se midió el resultado con el velo compuesto sobre la zona del titular:
+**16,7:1** contra la tinta clara en el peor punto. El velo está dimensionado
+para la composición anterior y sigue alcanzando con esta; si se cambia el
+encuadre, hay que volver a medir en los dos extremos de la deriva, no en un solo
+frame.
 
 ## Por qué importa la etiqueta
 
-Esta imagen **no es una observación de Ñawi ni de SPHEREx**: es archivo de otra
-misión. El hero la distingue explícitamente de dos maneras:
+Esta imagen **no es una observación de Ñawi ni de SPHEREx**: es archivo. El hero
+la distingue explícitamente de dos maneras:
 
-1. El crédito al pie del texto: *«Fondo: mapa de todo el cielo en infrarrojo,
-   WISE · NASA/JPL-Caltech · imagen de archivo, no una observación de Ñawi»*.
+1. La aclaración al pie del texto: *«Imagen de archivo, no una observación de
+   Ñawi»*.
 2. El recorte de la derecha lleva su propia etiqueta: *«Observación real de
    SPHEREx»*, con objeto, fecha y longitud de onda.
 
-Si se quita el crédito, el hero pasa a afirmar algo falso. No lo hagas.
+Si se quita la aclaración, el hero pasa a afirmar algo falso. No lo hagas.
 
 ## Qué NO es
 
-- No es una imagen de SPHEREx. SPHEREx es la misión que Ñawi visualiza; WISE es
-  otra misión distinta, anterior, que también mapeó el cielo en infrarrojo.
+- No es una imagen de SPHEREx. SPHEREx es la misión que Ñawi visualiza.
 - No es la vista de ningún objeto del catálogo. Los recortes de los cinco
   objetos son los PNG de `backend/data/<slug>/frames/`.
+- No es el mapa de WISE. Ese era el fondo anterior; esta es otra fotografía.

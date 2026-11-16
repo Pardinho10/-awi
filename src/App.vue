@@ -8,6 +8,7 @@ import IconoNawi from './components/IconoNawi.vue';
 import HeroNawi from './components/HeroNawi.vue';
 import CursorNawi from './components/CursorNawi.vue';
 import LangSwitch from './components/LangSwitch.vue';
+import GlosarioNawi from './components/GlosarioNawi.vue';
 import { locale } from './i18n/index.js';
 
 const { t } = useI18n();
@@ -230,9 +231,7 @@ const heroTextos = computed(() => ({
   cifra2: t('hero.statMonthsValue'),
   cifra2Unidad: t('hero.statMonthsUnit'),
   cifra2Rotulo: t('hero.statMonthsCaption'),
-  credito: t('hero.creditPrefix'),
-  creditoFuente: 'NASA/JPL-Caltech',
-  creditoAviso: t('hero.creditTail'),
+  creditoAviso: t('hero.creditNotice'),
   datoEtiqueta: t('hero.dataLabel'),
   datoEscala: t('hero.dataScale'),
   bajar: t('hero.scrollHint'),
@@ -493,7 +492,7 @@ onUnmounted(() => {
       <div class="topbar-actions">
         <LangSwitch />
         <button class="icon-button theme-button" :title="isLight ? t('a11y.themeToDark') : t('a11y.themeToLight')" :aria-label="isLight ? t('a11y.themeToDark') : t('a11y.themeToLight')" :aria-pressed="isLight" @click="toggleTheme"><IconoNawi :nombre="isLight ? 'luna' : 'sol'" /></button>
-        <button class="icon-button help-button" :title="t('a11y.help')" :aria-label="t('a11y.help')"><IconoNawi nombre="ayuda" /></button>
+        <GlosarioNawi />
       </div>
     </header>
 

@@ -113,6 +113,14 @@ html[data-theme="light"] .hx-theme.hx-cursor-hover .hx-cursor-ring {
   border-color: rgba(90, 55, 5, 0.85);
 }
 
+/* 5. Lienzo de la página: styles.css deja el <html> en la crema de su paleta
+   vieja, y nawi.css lo reancla al token de Helios para ambos temas. Este
+   selector (`html[data-theme="light"]`, 0,1,1) gana sobre el `html` plano de
+   nawi.css (0,0,1), así que en claro el lienzo es el ground de Helios. */
+html[data-theme="light"] {
+  background: #E9ECF5;
+}
+
 /* 5. Nav: estaba construida sobre negro translúcido. En claro, sobre el ground. */
 html[data-theme="light"] .hx-nav {
   background: linear-gradient(to bottom, rgba(233, 236, 245, 0.92), transparent);

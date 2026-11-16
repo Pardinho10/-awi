@@ -36,6 +36,7 @@
  *   bi-activity .................. pulso          (latido vacío)
  *   bi-moon-stars ................ luna           (pasar a oscuro)
  *   bi-brightness-high ........... sol            (pasar a claro)
+ *   bi-x-lg ......................... cerrar         (cerrar el glosario)
  *
  * Uso:
  *   <IconoNawi nombre="compartir" />                    // 16 px, decorativo
@@ -188,6 +189,7 @@ const ICONOS = {
     { c: [12, 12, 9.2] },
     { d: 'M5.6 18.4 18.4 5.6' },
   ],
+  cerrar: [{ d: 'M6.2 6.2 17.8 17.8M17.8 6.2 6.2 17.8' }],
 };
 
 /** Formas del icono pedido; si el nombre no existe, un marcador visible. */

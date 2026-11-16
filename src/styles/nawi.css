@@ -84,8 +84,18 @@ body.hx-theme {
   background: var(--hx-void);
   color: var(--hx-ink);
   font-family: var(--hx-font-display);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   -webkit-font-smoothing: antialiased;
+}
+
+/* El <html> de styles.css pinta el lienzo con su --bg-void (Gruvbox), que en
+   tema claro es una crema. Ese color se ve al rebotar la vista en móvil, cuando
+   el <body> no llega a cubrir la pantalla. La regla tiene que ganarle a la de
+   styles.css (misma especificidad, así que gana el orden: esta hoja se carga
+   después). La variante clara la pone helios-tokens-light.css: su selector
+   `html[data-theme="light"]` es más específico que este `html`. */
+html {
+  background: var(--hx-void);
 }
 
 /* El tema trae un halo radial fijo sobre toda la página. Acá no sirve: teñiría
@@ -100,6 +110,32 @@ body.hx-theme::before {
   color: var(--hx-void-deep);
 }
 
+.hx-theme ::selection {
+  background: var(--hx-solar);
+  color: var(--hx-void-deep);
+}
+
+/* --- Peso de las letras ------------------------------------------------
+   Los pesos finos (200/300) son el carácter del tema sobre fondo oscuro, donde
+   el trazo claro se separa solo del fondo. En claro el trazo fino se lava con
+   el ground: la misma letra se lee como si le faltara tinta. En vez de bajar
+   el contraste tipográfico en un solo tema, el peso sube un paso:
+
+     display (titulares)  200  →  300
+     texto y rótulos      300  →  400
+
+   Todo el CSS usa estos dos tokens, nunca un 200/300 literal, así que el
+   ajuste se hace acá y en un solo lugar. */
+:root {
+  --nawi-fw-display: 200;
+  --nawi-fw-text: 300;
+}
+
+html[data-theme="light"] {
+  --nawi-fw-display: 400;
+  --nawi-fw-text: 500;
+}
+
 /* --- Tipografía base ---------------------------------------------------- */
 
 .hx-theme h1,
@@ -107,7 +143,7 @@ body.hx-theme::before {
 .hx-theme h3 {
   margin: 0;
   font-family: var(--hx-font-display);
-  font-weight: 200;
+  font-weight: var(--nawi-fw-display);
   letter-spacing: var(--hx-track-heading);
   color: var(--hx-ink);
 }
@@ -129,7 +165,7 @@ body.hx-theme::before {
 .hx-theme .keyboard-hint,
 .hx-theme .footer {
   font-family: var(--hx-font-mono);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
   color: var(--hx-ink-faint);
@@ -147,7 +183,15 @@ body.hx-theme::before {
 
 /* Los anclajes del cover ("Explorar") desplazan la página: el salto es suave
    salvo que el sistema pida menos movimiento. */
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* El cover rompe el ancho máximo de .app-shell con 100vw. En escritorio,
+     100vw también cuenta el espacio de la scrollbar y deja unos píxeles de
+     desborde horizontal; clip lo recorta sin crear un contenedor de scroll.
+     Es la única forma de que el hero llegue a los dos bordes: con 100% se
+     queda del ancho del shell, que tiene padding lateral. */
+  overflow-x: clip;
+}
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
@@ -173,12 +217,21 @@ html { scroll-behavior: smooth; }
   right: 0;
   z-index: 200;
   height: var(--hx-nav-h);
-  display: flex;
+  /* Tres columnas (1fr auto 1fr): la del medio queda en el eje exacto de la
+     pantalla, sea cual sea el ancho de la marca y de los controles. Con
+     `space-around` el rótulo central se corría según esos anchos y no caía
+     sobre el mismo eje que el titular del hero, que sí está centrado. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: var(--hx-space-sm);
   border-bottom: 0;
-  padding-inline: var(--hx-pad);
+  /* El fondo (el degradado) sigue de borde a borde, pero el contenido se
+     recoge a la misma columna del hero: --hx-maxw centrado, con --hx-pad de
+     mínimo. Antes iba sin padding y la marca y los controles se pegaban a los
+     bordes de la pantalla. `max()` mantiene el aire lateral en anchos chicos,
+     donde (100% - maxw)/2 daría cero. */
+  padding-inline: max(var(--hx-pad), calc((100% - var(--hx-maxw)) / 2));
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--hx-void) 92%, transparent) 0%,
@@ -195,7 +248,7 @@ html[data-theme="light"] .hx-theme .topbar {
   /* Fuera del cover la barra es opaca: así el borde inferior del cover no se
      transparenta detrás del texto del catálogo. */
   background: var(--hx-void);
-  border-bottom: 1px solid var(--hx-line-soft);
+  //border-bottom: 1px solid var(--hx-line-soft);
   transition: background var(--hx-t-base), color var(--hx-t-base), border-color var(--hx-t-base);
 }
 
@@ -211,11 +264,27 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .brand {
 }
 
 html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .brand:hover {
-  color: var(--hx-solar);
+  color: var(--nawi-sky-solar);
+}
+
+/* La marca lleva su propio acento: también va en oro brillante sobre la foto. */
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .brand-mark {
+  border-color: var(--nawi-sky-line);
+  color: var(--nawi-sky-solar);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .brand-dot {
+  color: var(--nawi-sky-solar);
 }
 
 html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .mission-label {
-  color: var(--nawi-sky-ink-mute);
+  color: var(--nawi-sky-ink);
+}
+
+/* El punto que late sobre la foto: oro brillante, como en el mundo oscuro. */
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .live-dot {
+  background: var(--nawi-sky-solar);
+  box-shadow: 0 0 14px 5px var(--nawi-sky-solar-glow);
 }
 
 html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .label-divider {
@@ -228,8 +297,15 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .icon-button {
 }
 
 html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .icon-button:hover {
-  border-color: var(--hx-solar);
-  color: var(--hx-solar);
+  border-color: var(--nawi-sky-solar);
+  color: var(--nawi-sky-solar);
+}
+
+/* El botón abierto también se marca en claro sobre la foto, donde gana la tinta
+   del cover. Sin esta regla, el estado abierto solo se vería en tema oscuro. */
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .glosario-boton.is-abierto {
+  border-color: var(--nawi-sky-solar);
+  color: var(--nawi-sky-solar);
 }
 
 /* La píldora de idioma vive dentro de la barra: hereda el mismo criterio. */
@@ -243,7 +319,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option {
 
 html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option.is-active,
 html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
-  color: var(--hx-solar);
+  color: var(--nawi-sky-solar);
 }
 
 /* La marca no es un titular: se queda en minúscula y con la tilde. */
@@ -252,7 +328,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   align-items: center;
   gap: 10px;
   font-family: var(--hx-font-display);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   font-size: 21px;
   letter-spacing: 0.10em;
   color: var(--hx-ink);
@@ -279,19 +355,28 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   color: var(--hx-solar);
 }
 
+/* Extremos de la grilla del nav: la marca arranca en la columna 1 y los
+   controles cierran en la 3, así el rótulo central no se desplaza. */
+.hx-theme .brand { justify-self: start; }
+.hx-theme .topbar-actions { justify-self: end; }
+
 .hx-theme .mission-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20px;
   font-size: var(--hx-fs-micro);
   letter-spacing: var(--hx-track-wide);
-  color: var(--hx-ink-faint);
+  /* Tinta plena, igual que la marca: el rótulo central es texto, no un
+     separador. En `--hx-ink-faint` (30%) se leía como algo deshabilitado
+     al lado del resto de la barra. El `/` de .label-divider sigue en ghost,
+     porque eso sí es un separador. */
+  color: var(--hx-ink);
 }
 
 /* El punto que late: es una `hx-light` en miniatura. */
 .hx-theme .live-dot {
-  width: 5px;
-  height: 5px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--hx-solar);
   box-shadow: 0 0 14px 5px var(--hx-solar-glow);
@@ -317,7 +402,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   border: 1px solid var(--hx-line);
   border-radius: 50%;
   background: transparent;
-  color: var(--hx-ink-mute);
+  color: var(--hx-ink);
   font-size: 15px;
   cursor: pointer;
   transition: border-color var(--hx-t-fast), color var(--hx-t-fast);
@@ -326,6 +411,191 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 .hx-theme .icon-button:hover {
   border-color: var(--hx-line-hot);
   color: var(--hx-solar);
+}
+
+/* --- Glosario flotante ------------------------------------------------ */
+
+/* El panel cuelga del botón de la barra, alineado a su derecha y por debajo de
+   la altura del nav. Se ancla con `right: var(--hx-pad)` y no con `100%` del
+   botón: la barra tiene padding y el panel debe caer dentro del margen de la
+   página, no colgado fuera del borde en pantallas anchas. */
+.hx-theme .glosario {
+  position: relative;
+  display: flex;
+}
+
+.hx-theme .glosario-boton.is-abierto {
+  border-color: var(--hx-line-hot);
+  color: var(--hx-solar);
+}
+
+.hx-theme .glosario-panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  z-index: 250;
+  width: 372px;
+  max-width: calc(100vw - 2 * var(--hx-pad));
+  max-height: min(60svh, 460px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px 24px 18px;
+  /* Fondo opaco, no velo: detrás puede haber foto del cover o catálogo, y el
+     texto de definiciones necesita un fondo estable para ser legible. */
+  background: var(--hx-surface);
+  border: 1px solid var(--hx-line);
+  border-radius: 0;
+  box-shadow: none;
+  /* El botón queda detrás del panel en el orden de pintado; sin esto, la
+     flecha del botón se vería a través del borde superior. */
+  text-align: left;
+}
+
+.hx-theme .glosario-panel:focus {
+  outline: none;
+}
+
+.hx-theme .glosario-panel:focus-visible {
+  outline: 1px solid var(--hx-solar);
+  outline-offset: 2px;
+}
+
+.hx-theme .glosario-cabeza {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--hx-space-sm);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hx-line);
+}
+
+.hx-theme .glosario-titulo {
+  margin-top: 4px;
+  font-size: 1.05rem;
+  font-weight: var(--nawi-fw-text);
+  letter-spacing: var(--hx-track-heading);
+  color: var(--hx-ink);
+}
+
+/* Cerrar: mismo tratamiento que un icon-button, pero más chico y sin borde
+   circular. El glosario ya es un panel; un segundo círculo adentro compite. */
+.hx-theme .glosario-cerrar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--hx-ink-faint);
+  cursor: pointer;
+  transition: color var(--hx-t-fast), border-color var(--hx-t-fast);
+}
+
+.hx-theme .glosario-cerrar:hover {
+  border-color: var(--hx-line);
+  color: var(--hx-solar);
+}
+
+.hx-theme .glosario-intro {
+  margin: 12px 0 16px;
+  font-size: var(--hx-fs-small);
+  font-weight: var(--nawi-fw-text);
+  line-height: 1.6;
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .glosario-lista {
+  margin: 0;
+}
+
+.hx-theme .glosario-item {
+  padding: 11px 0;
+  border-top: 1px solid var(--hx-line-soft);
+}
+
+.hx-theme .glosario-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* El término en tinta plena y la definición apagada: la diferencia de peso es
+   lo que hace que el panel se pueda escanear en vez de leerse entero.
+   Sin `text-transform: uppercase` a propósito: los nombres llevan símbolos que
+   no sobreviven a la versalita — «μm» se convierte en «ΜM» y «σ» en «Σ», y los
+   dos dicen algo distinto de lo que deben. El tracking de mono alcanza para
+   que se lea como rótulo. */
+.hx-theme .glosario-item dt {
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: 0.1em;
+  color: var(--hx-ink);
+}
+
+.hx-theme .glosario-item dd {
+  margin: 4px 0 0;
+  font-size: var(--hx-fs-small);
+  font-weight: var(--nawi-fw-text);
+  line-height: 1.58;
+  color: var(--hx-ink-mute);
+}
+
+/* Pie de procedencia: el mismo trato que el crédito del hero, en chico. No es
+   letra chica para esconderlo: es la letra que dice de quién son los datos y
+   tiene que estar, aunque no sea lo primero que se lee.
+   Va en `--hx-ink-mute` y no en `--hx-ink-faint`: medido sobre el panel, faint
+   da 2.43:1 en tema oscuro y no pasa AA. La procedencia es texto informativo,
+   no un separador, así que la jerarquía se hace con tamaño y mono, no bajando
+   el contraste hasta volverlo ilegible. */
+.hx-theme .glosario-pie {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hx-line);
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  line-height: 1.62;
+  letter-spacing: 0.02em;
+  color: var(--hx-ink-mute);
+}
+
+.hx-theme .glosario-pie span {
+  display: block;
+  margin-top: 6px;
+  color: var(--hx-solar);
+}
+
+/* Entrada: sube 6px y aparece. Nada que rebote, como el resto del tema. */
+.glosario-aparece-enter-active,
+.glosario-aparece-leave-active {
+  transition: opacity var(--hx-t-fast), transform var(--hx-t-fast);
+}
+
+.glosario-aparece-enter-from,
+.glosario-aparece-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* En móvil el panel ocupa el ancho útil y deja de colgar del botón: a 372px
+   fijos se saldría de un viewport de 390. */
+@media (max-width: 560px) {
+  .hx-theme .glosario-panel {
+    position: fixed;
+    top: calc(var(--hx-nav-h) + 8px);
+    right: var(--hx-pad-xs);
+    left: var(--hx-pad-xs);
+    width: auto;
+    max-width: none;
+    max-height: calc(100svh - var(--hx-nav-h) - 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glosario-aparece-enter-active,
+  .glosario-aparece-leave-active {
+    transition: none;
+  }
 }
 
 /* --- Footer ------------------------------------------------------------ */
@@ -427,7 +697,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   margin-top: 8px;
   font-family: var(--hx-font-display);
   font-size: 1.05rem;
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   line-height: 1.2;
   letter-spacing: var(--hx-track-heading);
   text-transform: uppercase;
@@ -485,14 +755,14 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   color: var(--hx-ink);
   font-family: var(--hx-font-display);
   font-size: var(--hx-fs-small);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.02em;
   outline: none;
 }
 
 .hx-theme .search-box input::placeholder {
   color: var(--hx-ink-faint);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
 }
 
 .hx-theme .search-box kbd {
@@ -568,7 +838,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   width: auto;
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.08em;
   color: var(--hx-ink-faint);
@@ -588,7 +858,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 .hx-theme .object-copy strong {
   font-family: var(--hx-font-display);
   font-size: var(--hx-fs-small);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   line-height: 1.25;
   letter-spacing: 0.015em;
   color: var(--hx-ink);
@@ -597,7 +867,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 .hx-theme .object-copy small {
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--hx-ink-faint);
@@ -695,7 +965,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   background: none;
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
   color: var(--hx-ink-mute);
@@ -730,7 +1000,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   background: none;
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--hx-ink-mute);
@@ -786,7 +1056,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 .hx-theme .viewer-aviso-texto {
   font-family: var(--hx-font-display);
   font-size: var(--hx-fs-small);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   line-height: 1.55;
   letter-spacing: 0.01em;
   text-transform: none;
@@ -807,7 +1077,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 
 .hx-theme .viewer-empty h3 {
   font-size: var(--hx-fs-h3);
-  font-weight: 200;
+  font-weight: var(--nawi-fw-display);
   letter-spacing: var(--hx-track-heading);
   text-transform: uppercase;
 }
@@ -902,13 +1172,20 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 
 :root {
   --nawi-sky: #04050A;
-  --nawi-sky-line: rgba(196, 208, 245, 0.18);
+  --nawi-sky-line: rgba(196, 208, 245, 0.15);
   /* Tinta de los rótulos que se apoyan SOBRE el recorte. Son fijos, no del
      tema: el visor es oscuro en ambos temas, así que la tinta de encima
      tampoco puede cambiar o el texto desaparece en el tema claro. */
   --nawi-sky-ink: #E8ECFB;
   --nawi-sky-ink-mute: rgba(232, 236, 251, 0.62);
   --nawi-sky-ink-faint: rgba(232, 236, 251, 0.42);
+  /* Oro sobre superficies SIEMPRE oscuras: la foto del cover y el recorte del
+     visor. En tema claro el oro del sistema baja a ámbar profundo (#7A4A08)
+     para dar AA sobre el fondo claro de la página, pero sobre la foto ese
+     ámbar se apaga: el acento necesita el oro brillante del mundo oscuro.
+     Este token no cambia con el tema, como los de tinta del visor. */
+  --nawi-sky-solar: #E8B04B;
+  --nawi-sky-solar-glow: rgba(232, 176, 75, 0.14);
 }
 
 .hx-theme .sky-stage {
@@ -968,12 +1245,12 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 /* --- Cruz de posición esperada ----------------------------------------- */
 
 .hx-theme .target-marker.is-real {
-  border-color: var(--hx-solar);
+  border-color: var(--nawi-sky-solar);
 }
 
 .hx-theme .target-marker.is-real::before,
 .hx-theme .target-marker.is-real::after {
-  background: var(--hx-solar);
+  background: var(--nawi-sky-solar);
 }
 
 /* --- Rótulos sobre el recorte ------------------------------------------ */
@@ -989,7 +1266,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   -webkit-backdrop-filter: blur(10px);
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--nawi-sky-ink);
@@ -1009,8 +1286,8 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   width: 5px;
   height: 5px;
   margin-right: 8px;
-  background: var(--hx-solar);
-  box-shadow: 0 0 12px 4px var(--hx-solar-glow);
+  background: var(--nawi-sky-solar);
+  box-shadow: 0 0 12px 4px var(--nawi-sky-solar-glow);
 }
 
 .hx-theme .coordinate-label {
@@ -1023,7 +1300,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 }
 
 .hx-theme .coordinate-label i {
-  color: var(--hx-solar);
+  color: var(--nawi-sky-solar);
 }
 
 .hx-theme .coordinate-label span {
@@ -1045,7 +1322,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 .hx-theme .image-date span {
   font-family: var(--hx-font-display);
   font-size: var(--hx-fs-small);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.10em;
   font-variant-numeric: tabular-nums;
   color: var(--nawi-sky-ink);
@@ -1060,7 +1337,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 }
 
 .hx-theme .frame-calidad {
-  color: var(--hx-solar);
+  color: var(--nawi-sky-solar);
 }
 
 /* Aviso de interpolado: se sube arriba a la derecha, el sitio que quedó libre. */
@@ -1070,13 +1347,13 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   top: 0;
   padding: 10px 14px;
   border: 0;
-  border-bottom: 1px solid var(--hx-solar);
-  border-left: 1px solid var(--hx-solar);
-  color: var(--hx-solar);
+  border-bottom: 1px solid var(--nawi-sky-solar);
+  border-left: 1px solid var(--nawi-sky-solar);
+  color: var(--nawi-sky-solar);
 }
 
 .hx-theme .escala-aviso i {
-  color: var(--hx-solar);
+  color: var(--nawi-sky-solar);
 }
 
 /* --- Línea de tiempo --------------------------------------------------- */
@@ -1177,7 +1454,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   background: none;
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
   color: var(--hx-ink-faint);
@@ -1275,7 +1552,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   background: none;
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--hx-ink-mute);
@@ -1319,7 +1596,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   background: none;
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
   color: var(--hx-ink-mute);
@@ -1411,7 +1688,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 .hx-theme .rastro-head h2 {
   margin-top: 8px;
   font-size: 1.35rem;
-  font-weight: 200;
+  font-weight: var(--nawi-fw-display);
   letter-spacing: var(--hx-track-heading);
   text-transform: uppercase;
   color: var(--hx-ink);
@@ -1426,7 +1703,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   background: none;
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--hx-ink-faint);
@@ -1437,7 +1714,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   margin-top: var(--hx-space-sm);
   max-width: 68ch;
   font-size: var(--hx-fs-small);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   line-height: 1.6;
   color: var(--hx-ink-mute);
 }
@@ -1465,7 +1742,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   fill: var(--hx-ink-faint);
   font-family: var(--hx-font-mono);
   font-size: 10px;
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
 }
@@ -1474,7 +1751,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   fill: var(--hx-ink-faint);
   font-family: var(--hx-font-mono);
   font-size: 9.5px;
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
 }
@@ -1492,7 +1769,9 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 
 .hx-theme .latido-dot {
   fill: var(--hx-solar);
-  stroke: var(--nawi-sky);
+  /* El halo del punto debe ser el fondo del panel, no el negro del recorte:
+     el gráfico vive en la página y cambia de tema. */
+  stroke: var(--hx-void);
   stroke-width: 1.5;
 }
 
@@ -1504,7 +1783,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   fill: var(--hx-ink-mute);
   font-family: var(--hx-font-mono);
   font-size: 9px;
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.03em;
   /* Halo del color del panel: la etiqueta de longitud de onda cruza la curva
      y sin separación se vuelve ilegible justo donde hay más datos. */
@@ -1576,7 +1855,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   margin-bottom: 8px;
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
   color: var(--hx-ink-faint);
@@ -1585,7 +1864,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 .hx-theme .rastro-valor {
   font-family: var(--hx-font-display);
   font-size: 1.5rem;
-  font-weight: 200;
+  font-weight: var(--nawi-fw-display);
   line-height: 1.1;
   letter-spacing: 0.03em;
   font-variant-numeric: tabular-nums;
@@ -1645,10 +1924,14 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 }
 
 .hx-theme .rastro-frase-texto {
+  /* La frase es un párrafo de lectura, no un titular: va en tamaño de texto
+     guía. Con --hx-fs-h3 (hasta 2rem) la cita de 230 caracteres se comía el
+     panel y se leía como un grito. */
+  max-width: 68ch;
   font-family: var(--hx-font-display);
-  font-size: var(--hx-fs-h3);
-  font-weight: 200;
-  line-height: 1.35;
+  font-size: var(--hx-fs-lead);
+  font-weight: var(--nawi-fw-text);
+  line-height: 1.7;
   letter-spacing: 0.005em;
   text-transform: none;
   color: var(--hx-ink);
@@ -1688,7 +1971,8 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   }
 
   .hx-theme .rastro-frase-texto {
-    font-size: 1.1rem;
+    font-size: var(--hx-fs-body);
+    line-height: 1.65;
   }
 }
 
@@ -1733,6 +2017,43 @@ html::-webkit-scrollbar-thumb {
 
 html::-webkit-scrollbar-thumb:hover {
   background: var(--hx-line-hot);
+}
+
+/* El tema claro rompe la regla de arriba por un detalle de alcance: sus tokens
+   se declaran en `html[data-theme="light"] .hx-theme`, así que llegan a `body`
+   pero NO a `html`, que no es `.hx-theme`. La scrollbar se dibuja sobre `html`,
+   así que se quedaba con `--hx-line` del tema oscuro —rgba(196,208,245,.16),
+   casi blanco— y sobre el fondo claro era invisible en vez de gris.
+
+   El color va en el RIEL (#07080F), no en el pulgar. En oscuro el riel ya es
+   casi negro porque el fondo de la página lo es; en claro el riel es lo que
+   flotaba blanco contra el ground #E9ECF5. Pintar el riel con el negro del
+   tema oscuro devuelve el mismo control que se ve en modo oscuro.
+
+   El pulgar, entonces, lleva los MISMOS valores del tema oscuro
+   (rgba(196,208,245,.16)): es un trazo claro que se separa del riel negro. Si
+   se dejara el gris oscuro de antes, quedaría (12,15,27) sobre (7,8,15), es
+   decir invisible. Con un riel oscuro, el pulgar tiene que ser claro.
+
+   `scrollbar-color` es heredable, así que estos valores también arreglan los
+   scrollers internos (el glosario), que cuelgan de `body` pero heredan de acá. */
+html[data-theme="light"] {
+  /* Orden: pulgar contra riel. */
+  scrollbar-color: rgba(196, 208, 245, 0.16) #07080F;
+}
+
+html[data-theme="light"]::-webkit-scrollbar-track {
+  background: #07080F;
+}
+
+html[data-theme="light"]::-webkit-scrollbar-thumb {
+  background: rgba(196, 208, 245, 0.16);
+}
+
+html[data-theme="light"]::-webkit-scrollbar-thumb:hover {
+  /* El mismo hover del tema oscuro (--hx-line-hot), literal: en el nodo `html`
+     ese token no existe con el valor claro. */
+  background: rgba(232, 176, 75, 0.30);
 }
 
 /* Caret y subrayado del oro del tema. */
@@ -1913,9 +2234,20 @@ html::-webkit-scrollbar-thumb:hover {
    ========================================================================== */
 
 .hx-theme .cover {
+  /* El hero conserva los pesos finos del tema en los dos temas: es una pieza
+     oscura (foto + recorte) y el trazo fino es parte de su carácter. El ajuste
+     de peso del modo claro aplica al resto de la página, no acá. */
+  --nawi-fw-display: 200;
+  --nawi-fw-text: 300;
+
   /* Rompe el contenedor: .app-shell tiene max-width 1440 y padding lateral,
      así que sin esto el cover no llega a los bordes de la pantalla y no es
-     un cover. 100vw compensado con el margen negativo del padding. */
+     un cover. 100vw compensado con el margen negativo del padding.
+
+     Se usa 100vw y no 100% a propósito: 100% es el ancho del shell y deja el
+     hero metido dentro del padding. El precio es que 100vw incluye la
+     scrollbar en escritorio, así que sobra un borde de unos píxeles; lo
+     recorta el `overflow-x: clip` del html. */
   width: 100vw;
   max-width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -1930,9 +2262,12 @@ html::-webkit-scrollbar-thumb:hover {
      barra del navegador, y evita el salto al hacer scroll. */
   min-height: 100svh;
   margin-top: 0;
-  padding: calc(var(--hx-nav-h) + var(--hx-space-md)) var(--hx-pad) var(--hx-space-md);
+  padding: calc(var(--hx-nav-h) + var(--hx-space-md)) var(--hx-pad) clamp(88px, 11vh, 150px);
   overflow: hidden;
-  border-bottom: 1px solid var(--hx-line-soft);
+  /* Sin hairline inferior: el cover no corta contra la página. En tema claro se
+     disuelve con el fundido de abajo; en oscuro termina limpio (ver la regla de
+     .cover::after más abajo). La línea volvería a dibujar el corte en ambos. */
+  border-bottom: 0;
 }
 
 /* --- Capa 1: geometría orbital ----------------------------------------- */
@@ -1950,17 +2285,17 @@ html::-webkit-scrollbar-thumb:hover {
   position: absolute;
   border-radius: 50%;
   border: 1px solid var(--nawi-sky-line);
-  opacity: 0.75;
+  opacity: 0.58;
 }
 
-.hx-theme .cover-anillo.es-1 { width: 24vmin; height: 24vmin; opacity: 1; }
+.hx-theme .cover-anillo.es-1 { width: 24vmin; height: 24vmin; opacity: 0.78; }
 .hx-theme .cover-anillo.es-2 { width: 56vmin; height: 56vmin; }
 .hx-theme .cover-anillo.es-3 {
   width: 96vmin;
   height: 96vmin;
   border-style: dashed;
   border-color: var(--nawi-sky-line);
-  opacity: 0.5;
+  opacity: 0.4;
   animation: cover-gira 240s linear infinite;
 }
 .hx-theme .cover-anillo.es-4 {
@@ -1968,7 +2303,7 @@ html::-webkit-scrollbar-thumb:hover {
   height: 142vmin;
   border-style: dashed;
   border-color: var(--nawi-sky-line);
-  opacity: 0.34;
+  opacity: 0.26;
   animation: cover-gira-inv 320s linear infinite;
 }
 
@@ -2002,8 +2337,8 @@ html::-webkit-scrollbar-thumb:hover {
   left: 50%;
   width: 6px;
   height: 6px;
-  background: var(--hx-solar);
-  box-shadow: 0 0 18px 7px var(--hx-solar-glow);
+  background: var(--nawi-sky-solar);
+  box-shadow: 0 0 18px 7px var(--nawi-sky-solar-glow);
   animation: hx-breathe 6s ease-in-out infinite;
 }
 
@@ -2060,9 +2395,9 @@ html::-webkit-scrollbar-thumb:hover {
   object-fit: cover;
   object-position: center 48%;
   /* Desaturada y apenas oscurecida: es atmósfera, no protagonista. Si sube la
-     saturación, el verde de WISE pelea con el oro del tema; si sube el
-     oscurecido, la imagen desaparece y el cover queda en negro plano. El
-     trabajo de dar contraste al texto lo hace el velo, no el filtro. */
+     saturación, el rojo y el azul de la Vía Láctea pelean con el oro del tema;
+     si sube el oscurecido, la imagen desaparece y el cover queda en negro
+     plano. El trabajo de dar contraste al texto lo hace el velo, no el filtro. */
   filter: saturate(0.8) brightness(0.92) contrast(1.04);
 }
 
@@ -2163,7 +2498,7 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
   /* La escala se ata al viewport en las dos direcciones: 8.5vw sola hace que
      en pantallas anchas y bajas el titular desborde a lo alto. */
   font-size: clamp(2.6rem, min(8.5vw, 13vh), 7.5rem);
-  font-weight: 200;
+  font-weight: var(--nawi-fw-display);
   line-height: 0.92;
   white-space: nowrap;
   letter-spacing: var(--hx-track-display);
@@ -2194,6 +2529,14 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
   letter-spacing: 0.12em;
 }
 
+/* El subtítulo lleva aire arriba para que los dos saltos del bloque —título →
+   subtítulo y subtítulo → párrafo— se lean con el mismo ritmo. Sin esto el
+   subtítulo quedaba pegado al titular grande y el párrafo, separado. El valor
+   va en em del titular: escala solo con el tamaño del cover. */
+.hx-theme .cover-linea:nth-child(3) {
+  margin-top: 0.13em;
+}
+
 @keyframes cover-sube {
   from { transform: translateY(105%); }
   to   { transform: translateY(0); }
@@ -2201,14 +2544,19 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
 
 .hx-theme .cover-gild {
   font-style: normal;
-  color: var(--hx-solar);
+  /* La palabra en oro vive sobre la foto del cover, que es siempre oscura:
+     usa el oro brillante del mundo, no el ámbar del tema claro. */
+  color: var(--nawi-sky-solar);
 }
 
 .hx-theme .cover-copy {
   max-width: 44ch;
-  margin: var(--hx-space-md) auto 0;
+  /* El mismo aire que el subtítulo arriba (≈14px, en el tamaño del titular):
+     así los dos saltos se ven iguales, aunque el párrafo sea texto chico.
+     Acá no sirve 0.13em: en el párrafo el em es el de 16px y daría 2px. */
+  margin: clamp(10px, 1vw, 15px) auto 0;
   font-size: var(--hx-fs-lead);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   line-height: 1.6;
   letter-spacing: 0.02em;
   color: var(--nawi-sky-ink-mute);
@@ -2273,16 +2621,16 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
 .hx-theme .cover-dato-etiqueta {
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
-  color: var(--hx-solar);
+  color: var(--nawi-sky-solar);
 }
 
 .hx-theme .cover-dato-detalle {
   font-family: var(--hx-font-display);
   font-size: var(--hx-fs-small);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: 0.03em;
   color: var(--nawi-sky-ink);
 }
@@ -2319,7 +2667,7 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
 }
 
 .hx-theme .cover-bajar:hover {
-  color: var(--hx-solar);
+  color: var(--nawi-sky-solar);
 }
 
 .hx-theme .cover-bajar-texto {
@@ -2342,7 +2690,7 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
 /* La flecha es un SVG propio que ya apunta hacia abajo. */
 
 .hx-theme .cover-bajar:hover .cover-bajar-circulo {
-  border-color: var(--hx-solar);
+  border-color: var(--nawi-sky-solar);
   transform: translateY(3px);
 }
 
@@ -2359,7 +2707,7 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
   display: block;
   font-family: var(--hx-font-display);
   font-size: clamp(1.3rem, 1.9vw, 1.7rem);
-  font-weight: 200;
+  font-weight: var(--nawi-fw-display);
   line-height: 1;
   letter-spacing: 0.045em;
   font-variant-numeric: tabular-nums;
@@ -2368,7 +2716,7 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
 
 .hx-theme .cover-cifra strong small {
   font-size: 0.5em;
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
   color: var(--nawi-sky-ink-mute);
@@ -2379,7 +2727,7 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
   margin-top: 7px;
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   letter-spacing: var(--hx-track-label);
   text-transform: uppercase;
   color: var(--nawi-sky-ink-faint);
@@ -2394,6 +2742,46 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
 /* --- Crédito ----------------------------------------------------------- */
 
 /* Obligatorio: la imagen de fondo no es dato de Ñawi y hay que decirlo. */
+/* Fundido inferior: el cover se disuelve en el fondo de la página en vez de
+   cortar con una línea recta contra el catálogo. Va por encima de la foto y
+   por debajo del contenido, así que no toca el texto ni el recorte.
+
+   SÓLO TEMA CLARO. En claro es donde hace el trabajo: convierte el borde duro
+   de la foto nocturna contra la página clara en una transición suave. En
+   oscuro el destino del fundido es el mismo negro índigo del velo, así que el
+   degradado no aportaba transición —la foto y la página ya eran casi el mismo
+   color— y sólo dejaba una banda perceptible en el borde. Ahí no se dibuja:
+   el cover termina limpio contra el catálogo. */
+html[data-theme="light"] .hx-theme .cover::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 1;
+  height: clamp(50px, 50vh, 10px);
+  /* Curva suave (smoothstep), no una lista de tramos: cada tope cambia de
+     pendiente respecto del anterior, y el ojo marca ese quiebre como una línea
+     horizontal. Con la curva completa el degradado sube y baja de ritmo sin
+     cortes, de casi nada a color de página pleno. */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--hx-void) 2.8%, transparent) 10%,
+    color-mix(in srgb, var(--hx-void) 10.4%, transparent) 20%,
+    color-mix(in srgb, var(--hx-void) 21.6%, transparent) 30%,
+    color-mix(in srgb, var(--hx-void) 35.2%, transparent) 40%,
+    color-mix(in srgb, var(--hx-void) 50%, transparent) 50%,
+    color-mix(in srgb, var(--hx-void) 64.8%, transparent) 60%,
+    color-mix(in srgb, var(--hx-void) 78.4%, transparent) 70%,
+    color-mix(in srgb, var(--hx-void) 89.6%, transparent) 80%,
+    color-mix(in srgb, var(--hx-void) 97.2%, transparent) 90%,
+    var(--hx-void) 100%
+  );
+  pointer-events: none;
+}
+
+/* El crédito queda por encima del fundido (el padding inferior del cover
+   reserva esa franja), así que conserva la tinta fija del visor. */
+
 .hx-theme .cover-credito {
   position: relative;
   z-index: 2;
@@ -2402,7 +2790,7 @@ html[data-theme="light"] .hx-theme .cover-fondo-velo {
   margin-top: var(--hx-space-sm);
   font-family: var(--hx-font-mono);
   font-size: var(--hx-fs-micro);
-  font-weight: 300;
+  font-weight: var(--nawi-fw-text);
   line-height: 1.5;
   letter-spacing: 0.04em;
   text-align: center;
