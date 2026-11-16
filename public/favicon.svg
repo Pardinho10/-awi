@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ñawi">
+  <!-- Marca de Ñawi: el mismo ojo de la cabecera (sfumato/solar) sobre el negro
+       índigo del tema. Fondo completo para que se lea igual en pestañas claras
+       y oscuras; el ojo ocupa el 70% del lado para sobrevivir a 16 px. -->
+  <rect width="64" height="64" rx="14" fill="#07080F"/>
+  <g transform="translate(3.92 3.92) scale(2.34)" fill="none" stroke="#E8B04B"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2.6 12c2.7-4.4 6-6.6 9.4-6.6S18.7 7.6 21.4 12c-2.7 4.4-6 6.6-9.4 6.6S5.3 16.4 2.6 12Z"/>
+    <circle cx="12" cy="12" r="3.1" fill="#E8B04B" stroke="none"/>
+  </g>
+</svg>
