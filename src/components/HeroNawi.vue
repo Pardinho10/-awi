@@ -1,21 +1,27 @@
 <script setup>
 /**
- * Hero de Ñawi.
+ * Hero de Ñawi: cover a pantalla completa.
  *
- * Dos capas, y la distinción entre ellas es deliberada:
+ * Tres capas, y la distinción entre ellas importa:
  *
- *   1. FONDO — el mapa de todo el cielo de WISE (NASA/JPL-Caltech), en
+ *   1. GEOMETRÍA — anillos orbitales con dos luces que los recorren. Es
+ *      geometría pura, no una foto: no afirma nada sobre el cielo.
+ *   2. FONDO — el mapa de todo el cielo de WISE (NASA/JPL-Caltech), en
  *      infrarrojo. Es imagen de archivo: ilustra la atmósfera del producto,
  *      NO es una observación de Ñawi. Por eso lleva crédito visible.
- *   2. DATO — el recorte real de SPHEREx que el visitante está mirando. Es
+ *   3. DATO — el recorte real de SPHEREx que el visitante está mirando. Es
  *      lo único de la pantalla que es dato propio, va sin filtro encima y
  *      lleva su etiqueta.
  *
- * Si alguien confunde las dos, el hero miente. El crédito y la etiqueta
- * existen para que no pase.
+ * Si alguien confunde el fondo con el dato, el hero miente. El crédito y la
+ * etiqueta existen para que no pase.
+ *
+ * El tipo se centra y se superpone a los anillos: el centro queda vacío para
+ * que las letras se lean a través. Es lo que hace que el cover respire en vez
+ * de verse como un encabezado con adornos al costado.
  */
-
 import { computed } from 'vue';
+import IconoNawi from './IconoNawi.vue';
 
 const props = defineProps({
   /** Textos ya traducidos. Si no llegan, el hero usa los de origen (español).
@@ -52,7 +58,6 @@ const TEXTOS_BASE = {
   creditoAviso: '· imagen de archivo, no una observación de Ñawi',
   datoEtiqueta: 'Observación real de SPHEREx',
   datoEscala: '58×58 px, sin interpolar',
-  altCuadro: 'Recorte infrarrojo real de {objeto} del {fecha}',
 };
 
 const t = computed(() => ({ ...TEXTOS_BASE, ...props.textos }));
@@ -64,11 +69,21 @@ const t = computed(() => ({ ...TEXTOS_BASE, ...props.textos }));
 </script>
 
 <template>
-  <section class="hero" id="inicio">
-    <!-- Capa 1: archivo, no dato. -->
-    <div class="hero-fondo" aria-hidden="true">
+  <section class="cover" id="inicio">
+    <!-- Capa 1: geometría orbital. -->
+    <div class="cover-orbitas" aria-hidden="true">
+      <span class="cover-anillo es-1" />
+      <span class="cover-anillo es-2" />
+      <span class="cover-anillo es-3" />
+      <span class="cover-anillo es-4" />
+      <span class="cover-viajero viajero-solar"><i class="cover-luz es-solar" /></span>
+      <span class="cover-viajero viajero-plasma"><i class="cover-luz es-plasma" /></span>
+    </div>
+
+    <!-- Capa 2: archivo, no dato. -->
+    <div class="cover-fondo" aria-hidden="true">
       <img
-        class="hero-fondo-img"
+        class="cover-fondo-img"
         src="../assets/cielo-wise.jpg"
         srcset="../assets/cielo-wise-1100.jpg 900w, ../assets/cielo-wise.jpg 1600w"
         sizes="100vw"
@@ -78,51 +93,63 @@ const t = computed(() => ({ ...TEXTOS_BASE, ...props.textos }));
         decoding="async"
         fetchpriority="high"
       />
-      <span class="hero-fondo-velo" />
+      <span class="cover-fondo-velo" />
     </div>
 
-    <div class="hero-interior">
-      <div class="hero-texto">
-        <h1 class="hero-titulo">
-          <span class="hero-linea"><span>{{ t.linea1 }}</span></span>
-          <span class="hero-linea"><span>{{ t.linea2 }}</span></span>
-          <span class="hero-linea"><span>{{ t.linea3Antes }} <em class="hero-gild">{{ t.linea3Oro }}</em></span></span>
+    <div class="cover-interior">
+      <!-- Título: el centro queda libre de anillos para que se lea. -->
+      <div class="cover-texto">
+        <h1 class="cover-titulo">
+          <span class="cover-linea"><span>{{ t.linea1 }}</span></span>
+          <span class="cover-linea"><span>{{ t.linea2 }}</span></span>
+          <span class="cover-linea"><span>{{ t.linea3Antes }} <em class="cover-gild">{{ t.linea3Oro }}</em></span></span>
         </h1>
 
-        <p class="hero-copy">{{ t.copy }}</p>
-
-        <div class="hero-cifras">
-          <div class="hero-cifra">
-            <strong>102</strong>
-            <span>{{ t.cifra1Rotulo }}</span>
-          </div>
-          <span class="hero-cifra-regla" aria-hidden="true" />
-          <div class="hero-cifra">
-            <strong>{{ t.cifra2 }} <small>{{ t.cifra2Unidad }}</small></strong>
-            <span>{{ t.cifra2Rotulo }}</span>
-          </div>
-        </div>
-
-        <p class="hero-credito">
-          {{ t.credito }}
-          <span>{{ t.creditoFuente }}</span> {{ t.creditoAviso }}
-        </p>
       </div>
 
-      <!-- Capa 2: el dato. -->
-      <figure v-if="cuadro" class="hero-dato">
-        <div class="hero-dato-marco">
-          <img class="hero-dato-img" :src="cuadro" :alt="t.altCuadro.replace('{objeto}', objeto || '—').replace('{fecha}', fecha)" />
-          <span class="hero-dato-cruz" aria-hidden="true" />
+      <p class="cover-copy">{{ t.copy }}</p>
+
+      <!-- Capa 3: el dato. Flota en la esquina inferior derecha del cover. -->
+      <figure v-if="cuadro" class="cover-dato">
+        <div class="cover-dato-marco">
+          <img class="cover-dato-img" :src="cuadro" :alt="`Recorte infrarrojo real de ${objeto || 'un objeto'} del ${fecha}`" />
+          <span class="cover-dato-cruz" aria-hidden="true" />
         </div>
-        <figcaption class="hero-dato-pie">
-          <span class="hero-dato-etiqueta">{{ t.datoEtiqueta }}</span>
-          <span class="hero-dato-detalle">{{ objeto }} · {{ fecha }}<template v-if="banda"> · {{ banda }}</template></span>
-          <span class="hero-dato-escala">{{ t.datoEscala }}</span>
+        <figcaption class="cover-dato-pie">
+          <span class="cover-dato-etiqueta">{{ t.datoEtiqueta }}</span>
+          <span class="cover-dato-detalle">{{ objeto }} · {{ fecha }}<template v-if="banda"> · {{ banda }}</template></span>
+          <span class="cover-dato-escala">{{ t.datoEscala }}</span>
         </figcaption>
       </figure>
     </div>
 
-    <span class="hero-orilla" aria-hidden="true" />
+    <!-- Riel inferior: lo que antes era el bloque de cifras. -->
+    <div class="cover-riel">
+      <a class="cover-bajar" href="#explorar">
+        <span class="cover-bajar-texto">Explorar</span>
+        <span class="cover-bajar-circulo">
+          <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" fill="none">
+            <path d="M6 1v9M2.5 6.5 6 10l3.5-3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+      </a>
+
+      <div class="cover-cifras">
+        <div class="cover-cifra">
+          <strong>{{ t.cifra1 }}</strong>
+          <span>{{ t.cifra1Rotulo }}</span>
+        </div>
+        <span class="cover-cifra-regla" aria-hidden="true" />
+        <div class="cover-cifra">
+          <strong>{{ t.cifra2 }} <small>{{ t.cifra2Unidad }}</small></strong>
+          <span>{{ t.cifra2Rotulo }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Crédito: obligatorio, la imagen de fondo no es dato de Ñawi. -->
+    <p class="cover-credito">
+      {{ t.credito }} <span>{{ t.creditoFuente }}</span> · {{ t.creditoAviso }}
+    </p>
   </section>
 </template>
