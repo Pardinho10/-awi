@@ -19,7 +19,7 @@ sólo con hairlines de 1px y un acento dorado.
 | `src/styles/helios/helios.js` | Reveal al hacer scroll, estado del nav, cursor. Opcional. |
 | `src/styles/nawi.css` | **Capa propia de Ñawi**: traduce la interfaz al lenguaje del tema. |
 | `src/components/IconoNawi.vue` | Los 28 iconos SVG del proyecto. |
-| `src/components/HeroNawi.vue` | El hero: imagen de archivo + recorte real. |
+| `src/components/HeroNawi.vue` | El hero: imagen de archivo animada + recorte real. |
 | `src/assets/cielo-wise*.jpg` | Fondo del hero. Ver `doc/imagen-hero.md`. |
 | `src/styles.css` | Hoja anterior. **En retirada**, ver §7. |
 
@@ -70,10 +70,11 @@ deliberada y visible:
 | Fondo | Mapa de todo el cielo en infrarrojo, **WISE / NASA-JPL-Caltech** | Crédito al pie del texto, con la aclaración «imagen de archivo, no una observación de Ñawi» |
 | Recorte derecho | **Observación real de SPHEREx**, 58×58 px a 6× | Etiqueta «Observación real de SPHEREx» + objeto, fecha y longitud de onda |
 
-La imagen de fondo va desaturada y oscurecida (`saturate .78 / brightness .82`)
-para que no compita con el titular ni con el recorte, y debajo lleva un velo
-que garantiza el contraste del texto sobre cualquier zona de la imagen: medido
-entre 8.3:1 y 17:1.
+La imagen de fondo va desaturada y oscurecida (`saturate .8 / brightness .92 /
+contrast 1.04`) para que no compita con el titular ni con el recorte, y debajo
+lleva un velo que garantiza el contraste del texto sobre cualquier zona de la
+imagen: medido entre 6.7:1 y 17:1. El 6.7:1 es el peor caso, medido en los dos
+extremos de la deriva del fondo (ver §7).
 
 Procedencia, licencia y procesado: `doc/imagen-hero.md`.
 
@@ -141,6 +142,30 @@ Sombra difusa: no existe en el tema. Las únicas permitidas son los halos de
 - Nada por debajo de `150ms`. Nada que rebote.
 - Transiciones de `150ms` para hover y foco, `300ms` para cambios de estado.
 - `prefers-reduced-motion` desactiva el pulso del indicador y las animaciones de entrada.
+
+### El fondo del hero deriva
+
+La imagen de archivo del hero hace un Ken Burns lento: `scale 1.04 → 1.09` con
+un paneo de 2.8% del ancho, `60s`, `ease-in-out`, `alternate` (ida y vuelta, sin
+costura de loop). Lo único animado es el contenedor `.cover-fondo-capa`; el
+`filter` vive en la imagen, para que no se re-renderice en cada frame.
+
+Tres frenos, todos deliberados:
+
+| Condición | Qué pasa | Por qué |
+|---|---|---|
+| `prefers-reduced-motion: reduce` | `animation: none` | El fondo es la capa más grande del hero: es la que más justifica apagarse |
+| `max-width: 900px` | `animation: none` | En móvil la imagen se recorta a una franja, el paneo se lee como inestabilidad y la batería importa más |
+| `.cover.is-fuera` | `paused` | El cover salió de pantalla. Se pausa, no se quita: quitarla devolvería la imagen al inicio del recorrido y habría un salto al volver |
+
+El `scale` mínimo para que el paneo no descubra el borde es 1.04; se llega a 1.09
+para que el acercamiento también se lea. El contraste del titular se midió en los
+dos extremos del recorrido (6.71:1 al inicio, 6.83:1 al final), no en un frame
+promedio.
+
+La velocidad es una decisión editorial, no técnica: a 60s por tramo el fondo no
+se lee como animación. Si alguien nota que se movió, es que se quedó mirando el
+fondo en vez del titular.
 
 ---
 

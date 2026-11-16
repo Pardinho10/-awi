@@ -156,7 +156,9 @@ html { scroll-behavior: smooth; }
    altura, o la primera sección arranca debajo de la barra. Se resuelve con
    scroll-margin en los anclajes y con el padding del workspace. */
 .hx-theme .workspace {
-  scroll-margin-top: calc(var(--hx-nav-h) + var(--hx-space-sm));
+  /* Exactamente la altura del nav: si sobrara un píxel, el resto del cover
+     (riel de cifras) quedaría asomando detrás de la barra. */
+  scroll-margin-top: var(--hx-nav-h);
 }
 
 /* --- Topbar ------------------------------------------------------------ */
@@ -183,6 +185,65 @@ html { scroll-behavior: smooth; }
     color-mix(in srgb, var(--hx-void) 62%, transparent) 62%,
     transparent 100%
   );
+}
+
+/* Tema claro: sobre la foto la barra se comporta como en oscuro (velo y tinta
+   claros, porque detrás hay una imagen nocturna); al llegar al catálogo vuelve
+   al velo claro y la tinta oscura del tema. El cambio lo marca `.is-sobre-cover`,
+   que App.vue mantiene con un IntersectionObserver sobre el cover. */
+html[data-theme="light"] .hx-theme .topbar {
+  /* Fuera del cover la barra es opaca: así el borde inferior del cover no se
+     transparenta detrás del texto del catálogo. */
+  background: var(--hx-void);
+  border-bottom: 1px solid var(--hx-line-soft);
+  transition: background var(--hx-t-base), color var(--hx-t-base), border-color var(--hx-t-base);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--nawi-sky) 78%, transparent) 0%,
+    color-mix(in srgb, var(--nawi-sky) 42%, transparent) 62%,
+    transparent 100%);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .brand {
+  color: var(--nawi-sky-ink);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .brand:hover {
+  color: var(--hx-solar);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .mission-label {
+  color: var(--nawi-sky-ink-mute);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .label-divider {
+  color: var(--nawi-sky-ink-faint);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .icon-button {
+  border-color: var(--nawi-sky-line);
+  color: var(--nawi-sky-ink-mute);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .icon-button:hover {
+  border-color: var(--hx-solar);
+  color: var(--hx-solar);
+}
+
+/* La píldora de idioma vive dentro de la barra: hereda el mismo criterio. */
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-switch {
+  border-color: var(--nawi-sky-line);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option {
+  color: var(--nawi-sky-ink-faint);
+}
+
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option.is-active,
+html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
+  color: var(--hx-solar);
 }
 
 /* La marca no es un titular: se queda en minúscula y con la tilde. */
@@ -1972,9 +2033,9 @@ html::-webkit-scrollbar-thumb:hover {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  /* La deriva amplía la imagen un 6%: sin esto el sobrante se sale del cover.
-     No se usa `inset: -3%` en el contenedor porque entonces el velo, que es
-     hijo suyo, tampoco cubriría hasta el borde. */
+  /* La deriva amplía la imagen hasta un 9%: sin esto el sobrante se sale del
+     cover. No se usa `inset: -3%` en el contenedor porque entonces el velo,
+     que es hijo suyo, tampoco cubriría hasta el borde. */
   overflow: hidden;
 }
 
@@ -1984,11 +2045,11 @@ html::-webkit-scrollbar-thumb:hover {
 .hx-theme .cover-fondo-capa {
   width: 100%;
   height: 100%;
-  /* La deriva dura 3 minutos: es más lenta que el anillo de 240s a propósito.
-     A esa velocidad no se lee como animación, se lee como que la página
-     respira, que es lo único que un fondo de archivo puede permitirse hacer
-     sin empezar a afirmar cosas sobre sí mismo. */
-  animation: cover-deriva 180s ease-in-out infinite alternate;
+  /* Ken Burns lento: 60s por tramo, ida y vuelta. Es más lento que el anillo
+     más lento (240s) en términos de recorrido por segundo, pero su recorrido
+     es mayor, así que se percibe. La regla es que nunca gane la mirada: si
+     alguien se da vuelta y descubre que se movió, funcionó. */
+  animation: cover-deriva 60s ease-in-out infinite alternate;
   will-change: transform;
 }
 
@@ -2005,22 +2066,24 @@ html::-webkit-scrollbar-thumb:hover {
   filter: saturate(0.8) brightness(0.92) contrast(1.04);
 }
 
-/* Deriva: un paneo apenas perceptible sobre el recorte del cielo. El recorrido
-   es corto (2.4% del ancho) porque la imagen es un mapa, no un paisaje: si se
+/* Deriva: paneo y acercamiento apenas perceptibles sobre el recorte del cielo.
+   El recorrido es corto a propósito: la imagen es un mapa, no un paisaje. Si se
    mueve mucho, la Vía Láctea y las nebulosas se despegan del titular y el fondo
-   empieza a competir con los anillos. La escala sube lo justo para que no
-   aparezca el borde al desplazar.
+   empieza a competir con los anillos.
+   El `scale` no es adorno: sin él, al desplazar aparecería el borde de la
+   imagen. El mínimo que cubre el recorrido es 1.04; se llega a 1.09 para que el
+   acercamiento también se lea.
    `alternate` evita el salto de loop: el mismo recorrido de ida y vuelta no
    tiene costura que reparar. */
 @keyframes cover-deriva {
-  from { transform: scale(1.06) translate3d(0, 0, 0); }
-  to   { transform: scale(1.06) translate3d(-2.4%, 1%, 0); }
+  from { transform: scale(1.04) translate3d(1.2%, -0.6%, 0); }
+  to   { transform: scale(1.09) translate3d(-1.6%, 0.9%, 0); }
 }
 
-/* Con el cover fuera de pantalla la deriva se detiene. No se usa `paused`: al
-   volver, `paused` reanudaría desde donde quedó, lo que está bien, pero el
-   navegador sigue reservando la capa. `animation-play-state` es lo que
-   corresponde y no cambia el punto del recorrido. */
+/* Con el cover fuera de pantalla la deriva se detiene. Se pausa en vez de
+   quitar la animación: quitarla devolvería la imagen al inicio de su recorrido
+   y al volver habría un salto visible. Pausada se queda donde estaba y retoma
+   desde ahí. */
 .hx-theme .cover.is-fuera .cover-fondo-capa {
   animation-play-state: paused;
 }

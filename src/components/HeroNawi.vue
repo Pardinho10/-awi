@@ -8,7 +8,9 @@
  *      geometría pura, no una foto: no afirma nada sobre el cielo.
  *   2. FONDO — el mapa de todo el cielo de WISE (NASA/JPL-Caltech), en
  *      infrarrojo. Es imagen de archivo: ilustra la atmósfera del producto,
- *      NO es una observación de Ñawi. Por eso lleva crédito visible.
+ *      NO es una observación de Ñawi. Por eso lleva crédito visible. Deriva
+ *      lentamente (60s, ida y vuelta): es la única capa que puede moverse sin
+ *      afirmar nada, porque el movimiento es puramente óptico.
  *   3. DATO — el recorte real de SPHEREx que el visitante está mirando. Es
  *      lo único de la pantalla que es dato propio, va sin filtro encima y
  *      lleva su etiqueta.

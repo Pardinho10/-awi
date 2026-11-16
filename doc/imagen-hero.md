@@ -43,6 +43,29 @@ caja = (2630, 1359, 7370, 3671)   # 4740×2312 px del original
 Los JPEG se sirven tal cual: **no se convirtieron a WebP** porque esta máquina
 no tiene conversor de imágenes disponible.
 
+## La animación
+
+El fondo no es estático: desde que el hero se convirtió en cover, la imagen
+deriva lentamente. Es un Ken Burns de `scale 1.04 → 1.09` con paneo de 2.8%,
+`60s ease-in-out alternate`, sobre una capa contenedora (`.cover-fondo-capa`)
+para no re-renderizar el `filter` en cada frame.
+
+**El archivo no cambió por esto.** La deriva es transformación CSS sobre el JPEG
+existente: no hay video, no hay GIF, no hay sprite. El peso del fondo sigue
+siendo 194 KB + 50 KB. Se anima lo que ya estaba, en vez de reemplazarlo por un
+asset más pesado.
+
+La animación se apaga en `prefers-reduced-motion`, en `max-width: 900px` y
+cuando el cover sale de pantalla. Detalle y razones: `DESIGN.md` §7.
+
+## Reemplazar la imagen
+
+El recorte original está en `https://science.nasa.gov/wp-content/uploads/2023/09/jpegpia15481-2.jpg`.
+La caja usada es `(2630, 1359, 7370, 3671)` sobre las 10000×5030 px del archivo.
+Si algún día se cambia el encuadre hay que volver a medir el contraste del
+titular en los dos extremos de la deriva, no en un solo frame: el velo está
+afinado para esta composición y la banda galáctica cruza en diagonal.
+
 ## Por qué importa la etiqueta
 
 Esta imagen **no es una observación de Ñawi ni de SPHEREx**: es archivo de otra

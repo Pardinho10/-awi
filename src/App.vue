@@ -63,6 +63,13 @@ const playing = ref(false);
 const compare = ref(false);
 const query = ref('');
 const notice = ref('');
+/**
+ * ¿La barra superior está sobre el cover? En tema claro la barra cambia de
+ * tinta: sobre la foto (oscura) usa tinta clara; sobre el catálogo (claro)
+ * vuelve a la tinta oscura del tema. Se apaga con el cover fuera de pantalla.
+ */
+const sobreCover = ref(true);
+let observadorCover = null;
 
 const selectedObject = computed(() => objects.value.find((item) => item.id === objectId.value) ?? objects.value[0] ?? null);
 const frame = computed(() => frames.value[frameIndex.value] ?? null);
@@ -449,14 +456,38 @@ async function shareView() {
 onMounted(() => {
   loadCatalog();
   window.addEventListener('keydown', handleKeyDown);
+
+  // El cover mide 100svh y el anclaje del catálogo deja justo la altura del nav:
+  // la barra pasa a "fuera del cover" cuando el borde inferior de la foto cruza
+  // el borde inferior de la barra. Así, al llegar al catálogo, lo que queda
+  // detrás de la barra ya es página clara y la barra puede ser opaca.
+  const cover = document.querySelector('.cover');
+  if (cover && typeof IntersectionObserver === 'function') {
+    const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hx-nav-h')) || 80;
+    observadorCover = new IntersectionObserver(
+      ([entrada]) => { sobreCover.value = entrada.isIntersecting; },
+      { rootMargin: `-${navH}px 0px 0px 0px`, threshold: 0 },
+    );
+    observadorCover.observe(cover);
+  } else {
+    const medir = () => {
+      sobreCover.value = window.scrollY < (cover?.offsetHeight ?? 0) - 80;
+    };
+    medir();
+    window.addEventListener('scroll', medir, { passive: true });
+    observadorCover = { disconnect: () => window.removeEventListener('scroll', medir) };
+  }
 });
-onUnmounted(() => window.removeEventListener('keydown', handleKeyDown));
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+  observadorCover?.disconnect?.();
+});
 </script>
 
 <template>
   <main class="app-shell">
     <CursorNawi />
-    <header class="topbar">
+    <header class="topbar" :class="{ 'is-sobre-cover': sobreCover }">
       <a class="brand" href="#inicio" :aria-label="t('a11y.brandHome')"><span class="brand-mark"><IconoNawi nombre="ojo" /></span><span>ñawi<span class="brand-dot">.</span></span></a>
       <div class="mission-label"><span class="live-dot" /> {{ t('brand.mission') }} <span class="label-divider">/</span> SPHEREx</div>
       <div class="topbar-actions">
