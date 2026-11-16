@@ -19,6 +19,8 @@ sólo con hairlines de 1px y un acento dorado.
 | `src/styles/helios/helios.js` | Reveal al hacer scroll, estado del nav, cursor. Opcional. |
 | `src/styles/nawi.css` | **Capa propia de Ñawi**: traduce la interfaz al lenguaje del tema. |
 | `src/components/IconoNawi.vue` | Los 28 iconos SVG del proyecto. |
+| `src/components/HeroNawi.vue` | El hero: imagen de archivo + recorte real. |
+| `src/assets/cielo-wise*.jpg` | Fondo del hero. Ver `doc/imagen-hero.md`. |
 | `src/styles.css` | Hoja anterior. **En retirada**, ver §7. |
 
 Orden de carga en `src/main.js`. El orden importa: las hojas tienen especificidad
@@ -58,7 +60,28 @@ informativo es 5.01:1.
 
 ---
 
-## 3. La excepción: el visor no cambia de tema
+## 3. Hero: dos capas que no se pueden confundir
+
+El hero mezcla una imagen de archivo con un dato real, y la distinción es
+deliberada y visible:
+
+| Capa | Qué es | Cómo se identifica |
+|---|---|---|
+| Fondo | Mapa de todo el cielo en infrarrojo, **WISE / NASA-JPL-Caltech** | Crédito al pie del texto, con la aclaración «imagen de archivo, no una observación de Ñawi» |
+| Recorte derecho | **Observación real de SPHEREx**, 58×58 px a 6× | Etiqueta «Observación real de SPHEREx» + objeto, fecha y longitud de onda |
+
+La imagen de fondo va desaturada y oscurecida (`saturate .78 / brightness .82`)
+para que no compita con el titular ni con el recorte, y debajo lleva un velo
+que garantiza el contraste del texto sobre cualquier zona de la imagen: medido
+entre 8.3:1 y 17:1.
+
+Procedencia, licencia y procesado: `doc/imagen-hero.md`.
+
+El recorte se muestra siempre en múltiplo entero (6× escritorio, 4× tablet,
+3× móvil) y con `image-rendering: pixelated`. El tamaño vive en el CSS, no
+inline: un estilo inline gana la media query y el recorte desborda en móvil.
+
+## 4. La excepción: el visor no cambia de tema
 
 Los cuadros son PNG de fondo negro. Sobre una página clara el recorte se lee como
 un bloque pegado y el polvo tenue desaparece contra el borde. El visor es una
@@ -74,7 +97,7 @@ visor deja de funcionar en uno de los dos temas.
 
 ---
 
-## 4. Tipografía
+## 5. Tipografía
 
 Dos familias, ambas de Google Fonts.
 
@@ -94,7 +117,7 @@ Reglas que se aplican sin excepción:
 
 ---
 
-## 5. Vocabulario de componentes
+## 6. Vocabulario de componentes
 
 | Necesidad | Solución | Prohibido |
 |---|---|---|
@@ -113,7 +136,7 @@ Sombra difusa: no existe en el tema. Las únicas permitidas son los halos de
 
 ---
 
-## 6. Movimiento
+## 7. Movimiento
 
 - Nada por debajo de `150ms`. Nada que rebote.
 - Transiciones de `150ms` para hover y foco, `300ms` para cambios de estado.
@@ -121,7 +144,7 @@ Sombra difusa: no existe en el tema. Las únicas permitidas son los halos de
 
 ---
 
-## 7. Deuda declarada
+## 8. Deuda declarada
 
 `src/styles.css` (1898 líneas, la hoja anterior) sigue cargándose y `nawi.css` la
 pisa por especificidad. Quedan dos consecuencias:

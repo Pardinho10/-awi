@@ -246,155 +246,6 @@ body.hx-theme::before {
   color: var(--hx-solar);
 }
 
-/* --- Hero -------------------------------------------------------------- */
-
-.hx-theme .intro-row {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--hx-space-lg);
-  margin-top: 0;
-  padding: var(--hx-space-lg) 0 var(--hx-space-lg);
-  border: 0;
-  border-bottom: 1px solid var(--hx-line-soft);
-  border-radius: 0;
-  background: none;
-  overflow: hidden;
-}
-
-/* El halo solar del tema, contenido en el hero. */
-.hx-theme .intro-row::before {
-  content: "";
-  /* `inset: 0` con un degradado que se apaga antes de tocar el borde. Si el
-     halo se sale del bloque hay que recortarlo, y el recorte deja una costura
-     vertical visible en los bordes del hero. */
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(46% 72% at 16% 58%, var(--hx-solar-wash), transparent 70%);
-}
-
-.hx-theme .intro-row > * {
-  position: relative;
-  z-index: 1;
-}
-
-.hx-theme .intro-row .eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: var(--hx-fs-micro);
-  letter-spacing: var(--hx-track-wide);
-  color: var(--hx-solar);
-}
-
-.hx-theme .intro-row .eyebrow span {
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-  color: var(--hx-ink-faint);
-}
-
-/* Titular en versalitas con tracking amplio, peso 200. La coma y el punto
-   final se mantienen porque son parte de la frase, no decoración. */
-.hx-theme .intro-row h1 {
-  margin: var(--hx-space-md) 0 0;
-  font-size: clamp(2.1rem, 5.4vw, 4.4rem);
-  font-weight: 200;
-  line-height: 1.04;
-  letter-spacing: var(--hx-track-display);
-  text-transform: uppercase;
-  color: var(--hx-ink);
-  text-wrap: balance;
-}
-
-.hx-theme .intro-row h1 .hero-line {
-  display: block;
-  /* La hoja vieja pinta todo `span` dentro del h1 con el acento rosa.
-     La primera línea es tinta, no acento. */
-  color: var(--hx-ink);
-}
-
-/* Una sola palabra en oro por titular. En oro liso: el degradado con
-   background-clip es un recurso decorativo que no aporta nada y le quita
-   filo al contraste. */
-.hx-theme .intro-row h1 .hero-gild {
-  color: var(--hx-solar);
-}
-
-.hx-theme .intro-copy {
-  max-width: 46ch;
-  margin-top: var(--hx-space-md);
-  font-size: var(--hx-fs-lead);
-  font-weight: 300;
-  line-height: 1.65;
-  letter-spacing: 0.005em;
-  color: var(--hx-ink-mute);
-}
-
-/* --- Cifras de misión -------------------------------------------------- */
-
-.hx-theme .mission-stat {
-  display: flex;
-  align-items: center;
-  gap: var(--hx-space-md);
-  margin-bottom: 0;
-  padding-left: var(--hx-space-md);
-  border-left: 1px solid var(--hx-line);
-  flex-shrink: 0;
-}
-
-.hx-theme .stat-icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--hx-line);
-  border-radius: 50%;
-  color: var(--hx-solar);
-  font-size: 15px;
-  background: none;
-}
-
-/* Cifras tabulares: sin esto los números bailan al cambiar de cuadro. */
-.hx-theme .mission-stat strong {
-  display: block;
-  font-family: var(--hx-font-display);
-  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
-  font-weight: 200;
-  line-height: 1;
-  letter-spacing: 0.045em;
-  font-variant-numeric: tabular-nums;
-  color: var(--hx-ink);
-  background: none;
-  -webkit-text-fill-color: currentColor;
-}
-
-.hx-theme .mission-stat strong small {
-  font-size: 0.48em;
-  font-weight: 300;
-  letter-spacing: var(--hx-track-label);
-  text-transform: uppercase;
-  color: var(--hx-ink-mute);
-}
-
-.hx-theme .mission-stat > div > span {
-  display: block;
-  margin-top: 8px;
-  font-family: var(--hx-font-mono);
-  font-size: var(--hx-fs-micro);
-  font-weight: 300;
-  letter-spacing: var(--hx-track-label);
-  text-transform: uppercase;
-  color: var(--hx-ink-faint);
-}
-
-.hx-theme .stat-rule {
-  width: 1px;
-  height: 40px;
-  background: var(--hx-line);
-}
-
 /* --- Footer ------------------------------------------------------------ */
 
 .hx-theme .footer {
@@ -418,39 +269,6 @@ body.hx-theme::before {
 
 /* --- Responsive -------------------------------------------------------- */
 
-@media (max-width: 900px) {
-  .hx-theme .intro-row {
-    flex-direction: column;
-    align-items: flex-start;
-    padding-top: var(--hx-space-lg);
-  }
-
-  .hx-theme .mission-stat {
-    padding-left: 0;
-    padding-top: var(--hx-space-sm);
-    border-left: 0;
-    border-top: 1px solid var(--hx-line-soft);
-    width: 100%;
-  }
-
-  /* En columna, el aire de escritorio entre el texto y las cifras se vuelve
-     un hueco: se aprieta. */
-  .hx-theme .intro-row {
-    gap: var(--hx-space-md);
-  }
-
-  /* Sólo los bloques de cifras crecen. Sin el :not, la regla vertical también
-     recibía `flex: 1` y se estiraba a 188px: una barra rellena en medio del
-     hero en vez de un separador de 1px. */
-  .hx-theme .mission-stat > div:not(.stat-rule) {
-    flex: 1 1 0;
-  }
-
-  .hx-theme .stat-rule {
-    flex: 0 0 1px;
-  }
-}
-
 @media (max-width: 560px) {
   .hx-theme .brand {
     font-size: 19px;
@@ -464,23 +282,6 @@ body.hx-theme::before {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
-  }
-
-  /* En 390px las dos cifras con sus rótulos no entran en una fila sin
-     apretarse. Se quitan el ícono y la regla, que acá sólo decoran, y las
-     cifras se reparten con espacio entre ellas. */
-  .hx-theme .mission-stat {
-    justify-content: space-between;
-    gap: var(--hx-space-md);
-  }
-
-  .hx-theme .stat-icon,
-  .hx-theme .stat-rule {
-    display: none;
-  }
-
-  .hx-theme .mission-stat > div > span {
-    letter-spacing: 0.12em;
   }
 }
 
@@ -1806,5 +1607,576 @@ body.hx-theme::before {
 
   .hx-theme .rastro-frase-texto {
     font-size: 1.1rem;
+  }
+}
+
+/* ============================================================================
+   Hero con imagen
+   ----------------------------------------------------------------------------
+   Dos capas separadas a propósito: el fondo es archivo de la NASA (atmósfera,
+   con crédito visible) y el recorte de la derecha es el dato real de SPHEREx.
+   Todo lo que se apoya sobre la imagen usa tinta clara fija (--nawi-sky-ink*),
+   porque la imagen es oscura en ambos temas.
+   ========================================================================== */
+
+.hx-theme .hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: flex-end;
+  min-height: min(78vh, 640px);
+  margin-top: var(--hx-space-md);
+  padding: var(--hx-space-xl) 0 var(--hx-space-lg);
+  border-bottom: 1px solid var(--hx-line-soft);
+  overflow: hidden;
+}
+
+/* --- Capa de fondo ----------------------------------------------------- */
+
+.hx-theme .hero-fondo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hx-theme .hero-fondo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 50%;
+  /* La imagen se desatura y oscurece para que no compita con el titular ni
+     con el recorte: es atmósfera, no protagonista. `saturate` se queda bajo
+     a propósito; si sube, el verde de WISE pelea con el oro del tema. */
+  filter: saturate(0.78) brightness(0.82) contrast(1.04);
+}
+
+/* Velo: abajo y a la izquierda oscurece para que el texto tenga contraste
+   medido sobre cualquier zona de la imagen, que es muy despareja. */
+.hx-theme .hero-fondo-velo {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(100deg,
+      color-mix(in srgb, var(--hx-void) 92%, transparent) 0%,
+      color-mix(in srgb, var(--hx-void) 78%, transparent) 38%,
+      color-mix(in srgb, var(--hx-void) 34%, transparent) 68%,
+      color-mix(in srgb, var(--hx-void) 58%, transparent) 100%),
+    linear-gradient(0deg,
+      var(--hx-void) 0%,
+      color-mix(in srgb, var(--hx-void) 30%, transparent) 34%,
+      transparent 65%);
+}
+
+/* --- Contenido --------------------------------------------------------- */
+
+.hx-theme .hero-interior {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--hx-space-lg);
+  width: 100%;
+}
+
+.hx-theme .hero-texto {
+  max-width: 62ch;
+}
+
+.hx-theme .hero-titulo {
+  margin: 0;
+  font-family: var(--hx-font-display);
+  font-size: clamp(2.3rem, 5.6vw, 4.6rem);
+  font-weight: 200;
+  line-height: 0.98;
+  letter-spacing: var(--hx-track-display);
+  text-transform: uppercase;
+  color: var(--nawi-sky-ink);
+  text-wrap: balance;
+}
+
+/* Máscara de entrada: cada línea sube desde su propio recorte. */
+.hx-theme .hero-linea {
+  display: block;
+  overflow: hidden;
+}
+
+.hx-theme .hero-linea > span {
+  display: block;
+  animation: hero-sube 1.1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.hx-theme .hero-linea:nth-child(1) > span { animation-delay: 0.05s; }
+.hx-theme .hero-linea:nth-child(2) > span { animation-delay: 0.14s; }
+.hx-theme .hero-linea:nth-child(3) > span { animation-delay: 0.23s; }
+
+@keyframes hero-sube {
+  from { transform: translateY(105%); }
+  to   { transform: translateY(0); }
+}
+
+/* Una sola palabra en oro, en oro liso. */
+.hx-theme .hero-gild {
+  font-style: normal;
+  color: var(--hx-solar);
+}
+
+.hx-theme .hero-copy {
+  max-width: 46ch;
+  margin-top: var(--hx-space-md);
+  font-size: var(--hx-fs-lead);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--nawi-sky-ink-mute);
+}
+
+/* --- Cifras ----------------------------------------------------------- */
+
+.hx-theme .hero-cifras {
+  display: flex;
+  align-items: center;
+  gap: var(--hx-space-md);
+  margin-top: var(--hx-space-lg);
+}
+
+.hx-theme .hero-cifra strong {
+  display: block;
+  font-family: var(--hx-font-display);
+  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: 0.045em;
+  font-variant-numeric: tabular-nums;
+  color: var(--nawi-sky-ink);
+}
+
+.hx-theme .hero-cifra strong small {
+  font-size: 0.5em;
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--nawi-sky-ink-mute);
+}
+
+.hx-theme .hero-cifra > span {
+  display: block;
+  margin-top: 7px;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--nawi-sky-ink-faint);
+}
+
+.hx-theme .hero-cifra-regla {
+  width: 1px;
+  height: 38px;
+  background: var(--nawi-sky-line);
+}
+
+/* --- Crédito de la imagen de archivo ---------------------------------- */
+
+/* Obligatorio: la imagen de fondo no es dato de Ñawi y hay que decirlo. */
+.hx-theme .hero-credito {
+  margin-top: var(--hx-space-lg);
+  max-width: 52ch;
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--nawi-sky-ink-faint);
+}
+
+.hx-theme .hero-credito span {
+  color: var(--nawi-sky-ink-mute);
+}
+
+/* --- El dato ----------------------------------------------------------- */
+
+.hx-theme .hero-dato {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.hx-theme .hero-dato {
+  /* 58 px del dato por 6 = múltiplo entero, sin interpolación. */
+  --lado: 348px;
+}
+
+.hx-theme .hero-dato-marco {
+  position: relative;
+  width: var(--lado);
+  height: var(--lado);
+  /* Sin esto, el PNG se interpola y aparecen tonos que el dato no tiene. */
+  line-height: 0;
+  box-shadow: 0 0 0 1px var(--nawi-sky-line);
+  animation: hero-aparece 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.35s backwards;
+}
+
+@keyframes hero-aparece {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.hx-theme .hero-dato-img {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* La cruz marca el centro geométrico del recorte, no una posición medida:
+   por eso es una hairline discreta y no un marcador dorado. */
+.hx-theme .hero-dato-cruz {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--nawi-sky-line), var(--nawi-sky-line)) center / 1px 22px no-repeat,
+    linear-gradient(var(--nawi-sky-line), var(--nawi-sky-line)) center / 22px 1px no-repeat;
+  opacity: 0.55;
+}
+
+.hx-theme .hero-dato-pie {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: var(--lado);
+  margin-top: var(--hx-space-sm);
+  padding-top: 10px;
+  border-top: 1px solid var(--nawi-sky-line);
+}
+
+.hx-theme .hero-dato-etiqueta {
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  font-weight: 300;
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-solar);
+}
+
+.hx-theme .hero-dato-detalle {
+  font-family: var(--hx-font-display);
+  font-size: var(--hx-fs-small);
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  color: var(--nawi-sky-ink);
+}
+
+.hx-theme .hero-dato-escala {
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--nawi-sky-ink-faint);
+}
+
+/* --- Orilla inferior: el hero se derrama en la página ----------------- */
+
+.hx-theme .hero-orilla {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hx-solar), transparent);
+  opacity: 0.5;
+}
+
+/* --- Responsive -------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  /* 58 x 4 */
+  .hx-theme .hero-dato {
+    --lado: 232px;
+  }
+}
+
+@media (max-width: 900px) {
+  .hx-theme .hero {
+    min-height: 0;
+    padding: var(--hx-space-lg) 0;
+  }
+
+  .hx-theme .hero-interior {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--hx-space-lg);
+  }
+
+  /* En columna el recorte va primero: es lo que hace entender el producto.
+     Va alineado a la izquierda con el resto del contenido, y el pie se limita
+     al ancho del recorte para que no se estire a todo lo ancho. */
+  .hx-theme .hero-dato {
+    order: -1;
+    margin-left: 0;
+  }
+
+  .hx-theme .hero-dato-pie {
+    width: var(--lado);
+    max-width: 100%;
+  }
+
+  /* 58 x 3 */
+  .hx-theme .hero-dato {
+    --lado: 174px;
+  }
+
+  .hx-theme .hero-fondo-velo {
+    background:
+      linear-gradient(0deg,
+        var(--hx-void) 0%,
+        color-mix(in srgb, var(--hx-void) 72%, transparent) 45%,
+        color-mix(in srgb, var(--hx-void) 52%, transparent) 100%);
+  }
+}
+
+@media (max-width: 560px) {
+  .hx-theme .hero {
+    padding: var(--hx-space-md) 0;
+  }
+
+  .hx-theme .hero-titulo {
+    font-size: clamp(1.9rem, 9vw, 2.5rem);
+    line-height: 1.02;
+  }
+
+  .hx-theme .hero-kicker {
+    margin-bottom: var(--hx-space-sm);
+    letter-spacing: var(--hx-track-label);
+  }
+
+  .hx-theme .hero-cifras {
+    gap: var(--hx-space-sm);
+    margin-top: var(--hx-space-md);
+  }
+
+  .hx-theme .hero-cifra-regla {
+    height: 32px;
+  }
+
+  .hx-theme .hero-credito {
+    margin-top: var(--hx-space-md);
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-theme .hero-linea > span,
+  .hx-theme .hero-dato-marco {
+    animation: none;
+  }
+}
+
+/* ============================================================================
+   Superficies del navegador
+   ----------------------------------------------------------------------------
+   Lo que no dibujamos también viste la página: selección de texto, scrollbar,
+   caret, anillos de foco y el subrayado de los enlaces. Con los valores por
+   defecto, el navegador delata que esto se ensambló en vez de construirse.
+   ========================================================================== */
+
+.hx-theme ::selection {
+  background: var(--hx-solar);
+  color: var(--hx-void-deep);
+}
+
+.hx-theme ::-moz-selection {
+  background: var(--hx-solar);
+  color: var(--hx-void-deep);
+}
+
+/* Scrollbar: riel transparente y pulgar hairline. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hx-line) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--hx-line);
+  border: 0;
+  border-radius: 0;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--hx-line-hot);
+}
+
+/* Caret y subrayado del oro del tema. */
+.hx-theme {
+  caret-color: var(--hx-solar);
+}
+
+.hx-theme a {
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--hx-line-hot);
+}
+
+.hx-theme a:hover {
+  text-decoration-color: var(--hx-solar);
+}
+
+/* Los campos de texto heredan la tipografía del tema, no la del navegador. */
+.hx-theme input,
+.hx-theme button,
+.hx-theme textarea,
+.hx-theme select {
+  font-family: inherit;
+}
+
+/* Foco: hairline de oro, sin halo difuso. */
+.hx-theme :focus-visible {
+  outline: 1px solid var(--hx-solar);
+  outline-offset: 3px;
+}
+
+/* El control de rango necesita su propio foco: el outline global queda lejos. */
+.hx-theme .time-range:focus-visible {
+  outline: 1px solid var(--hx-solar);
+  outline-offset: 4px;
+}
+
+/* --- Íconos ------------------------------------------------------------ */
+
+/* IconoNawi dibuja a 1.25px en un viewBox de 24. A tamaños chicos el trazo se
+   afina solo; el ajuste óptico mantiene el peso visual parejo entre 16 y 34px. */
+.hx-theme .icono-nawi {
+  flex-shrink: 0;
+  vertical-align: -0.125em;
+  shape-rendering: geometricPrecision;
+}
+
+/* --- Detalles de lectura ----------------------------------------------- */
+
+/* Los párrafos largos no deben pasar de ~70 caracteres: más ancho cansa. */
+.hx-theme p {
+  text-wrap: pretty;
+}
+
+.hx-theme h1,
+.hx-theme h2,
+.hx-theme h3 {
+  text-wrap: balance;
+}
+
+/* Cifras tabulares en todo lo que cambia de valor. */
+.hx-theme .frame-counter,
+.hx-theme .hero-cifra strong,
+.hx-theme .mission-stat strong,
+.hx-theme .rastro-valor,
+.hx-theme .count-pill,
+.hx-theme .image-date span {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Estados que faltaban --------------------------------------------- */
+
+/* El aviso flotante (toast) venía con la paleta vieja. */
+.hx-theme .toast-note {
+  position: fixed;
+  left: 50%;
+  bottom: var(--hx-space-md);
+  transform: translateX(-50%);
+  z-index: 300;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 18px;
+  border: 1px solid var(--hx-solar);
+  border-radius: 500px;
+  background: color-mix(in srgb, var(--hx-void) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-family: var(--hx-font-mono);
+  font-size: var(--hx-fs-micro);
+  letter-spacing: var(--hx-track-label);
+  text-transform: uppercase;
+  color: var(--hx-solar);
+}
+
+.hx-theme .toast-note .icono-nawi {
+  color: var(--hx-solar);
+}
+
+/* Objetos sin cuadros: el estado vacío ya se estiló, pero el ícono conserva
+   el círculo relleno de la hoja vieja. */
+.hx-theme .viewer-empty-icon {
+  background: none;
+  border-radius: 50%;
+}
+
+/* El divisor del pie de la sección. */
+.hx-theme .caption-divider {
+  color: var(--hx-ink-ghost);
+}
+
+/* La etiqueta de la barra lateral cuando el catálogo falló. */
+.hx-theme .sidebar-bottom .icono-nawi {
+  color: var(--hx-plasma);
+}
+
+@media (max-width: 560px) {
+  .hx-theme .toast-note {
+    right: var(--hx-pad-xs);
+    left: var(--hx-pad-xs);
+    bottom: var(--hx-pad-xs);
+    transform: none;
+    justify-content: center;
+  }
+}
+
+/* ============================================================================
+   Ajustes de lectura y navegación
+   ========================================================================== */
+
+/* La barra lateral es corta y la columna del visor es larga: sin sticky, al
+   hacer scroll queda una columna vacía de cientos de píxeles. */
+.hx-theme .sidebar-col {
+  position: sticky;
+  top: calc(var(--hx-nav-h) + var(--hx-space-sm));
+  align-self: start;
+}
+
+/* El pie bajo el visor partía la frase en dos líneas con la última palabra
+   sola. Se acota el ancho y se evita que el atajo se parta. */
+.hx-theme .below-viewer > span:first-child {
+  max-width: 78ch;
+}
+
+.hx-theme .below-viewer .keyboard-hint {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* La leyenda 'RECORRER CUADROS' es una acción, no un metadato: sube un paso
+   de contraste. */
+.hx-theme .play-caption {
+  color: var(--hx-ink-mute);
+  letter-spacing: 0.14em;
+}
+
+/* La curva de brillo necesitaba aire arriba: el título del eje quedaba pegado
+   a la bajada. */
+.hx-theme .latido-svg {
+  margin-top: var(--hx-space-md);
+}
+
+/* En pantallas chicas el sticky estorba: la columna ya está arriba. */
+@media (max-width: 900px) {
+  .hx-theme .sidebar-col {
+    position: static;
   }
 }
