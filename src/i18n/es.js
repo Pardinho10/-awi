@@ -23,7 +23,7 @@ export default {
     line2: 'cambia.',
     line3a: 'Ahora podés',
     line3em: 'verlo.',
-    copy: 'Viajá a través de observaciones infrarrojas reales y seguí las huellas que dejan los objetos celestes.',
+    copy: 'Ñawi te permite viajar a través de observaciones infrarrojas reales de SPHEREx y seguir las huellas que dejan los objetos celestes.',
     statBands: 'bandas infrarrojas',
     statMonthsValue: '6',
     statMonthsUnit: 'meses',

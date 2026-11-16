@@ -47,7 +47,7 @@ const TEXTOS_BASE = {
   linea2: 'cambia.',
   linea3Antes: 'Ahora podés',
   linea3Oro: 'verlo.',
-  copy: 'Viajá a través de observaciones infrarrojas reales y seguí las huellas que dejan los objetos celestes.',
+  copy: 'Ñawi te permite viajar a través de observaciones infrarrojas reales de SPHEREx y seguir las huellas que dejan los objetos celestes.',
   cifra1: '102',
   cifra1Rotulo: 'bandas infrarrojas',
   cifra2: '6',

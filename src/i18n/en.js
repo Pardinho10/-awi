@@ -21,7 +21,7 @@ export default {
     line2: 'changes.',
     line3a: 'Now you can',
     line3em: 'see it.',
-    copy: 'Travel through real infrared observations and follow the traces celestial objects leave behind.',
+    copy: 'Ñawi lets you travel through real SPHEREx infrared observations and follow the traces celestial objects leave behind.',
     statBands: 'infrared bands',
     statMonthsValue: '6',
     statMonthsUnit: 'months',
