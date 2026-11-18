@@ -1,6 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 /* ==========================================================================
+   Nawi — HOJA EN RETIRADA (ver DESIGN.md y main.js)
+
+   Esta es la hoja del diseño anterior. Convive con las de Helios y con
+   styles/nawi.css, que se carga DESPUÉS y por eso gana donde ambas definen lo
+   mismo. Se está migrando por fases; no agregar reglas nuevas acá.
+
+   OJO — cómo se rompe esto: cuando nawi.css redefine un componente pero NO
+   declara alguna propiedad que esta hoja sí define, esa propiedad sigue
+   aplicando en silencio. Los tres bugs del visor y el del navbar salieron de
+   ahí, no del orden de carga (se probó invertirlo y no cambia nada).
+
+   Antes de tocar un componente de la lista de abajo, revisá esta hoja y
+   anulá explicitamente lo que moleste. Los casos que nos mordieron:
+     - .coordinate-label  top:0 acá + bottom:14px en la media de 680px
+     - .sky-stage         height:280px en la media de 680px
+     - .topbar            espacio de propiedades entre las dos hojas
+
+   Clases de las que esta hoja sigue siendo DUEÑA (nawi.css no las redefine).
+   Migrarlas es el trabajo pendiente de la fase final:
+     compare-wipe · comparison · image-layer · latido-chart · latido-hit
+     latido-vacio · sky-grid · sky-vignette · theme-button · trayectoria
+     trayectoria-extremo · trayectoria-linea · viewer · viewer-aviso-copy
+     viewer-column · viewer-empty-meta · viewer-empty-motivo · wipe-label
+     wipe-line
+
+   Las 111 clases restantes están definidas en las dos hojas: nawi.css gana,
+   pero cualquier propiedad que no declare se hereda de acá.
+   ========================================================================== */
+
+/* ==========================================================================
    Nawi — Guía de diseño "Gruvbox espacial"
 
    Reglas aplicadas:
@@ -205,8 +235,6 @@ p { margin: 0; }
 a { color: var(--link); text-decoration-color: var(--link-underline); }
 a:hover { color: var(--link-hover); text-decoration-color: currentColor; }
 
-i.bi { line-height: 1; }
-
 /* Foco de teclado visible: anillo --star + halo oscuro (necesario en claro) */
 :where(a, button, input, [role='option']):focus-visible {
   outline: 2px solid var(--focus);
@@ -319,21 +347,12 @@ i.bi { line-height: 1; }
 .theme-button { color: var(--interactive); }
 .theme-button i { font-size: 14px; }
 
-/* ------------------------------------------------------- hero (nebulosa) --- */
-.intro-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 40px;
-  margin-top: 26px;
-  padding: 40px 36px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background:
-    linear-gradient(135deg, var(--hero-tint-nebula), var(--hero-tint-ice)),
-    radial-gradient(ellipse at top, var(--bg-panel) 0%, var(--bg-void) 70%);
-}
-
+/* ------------------------------------------------------- rótulos --- */
+/* .eyebrow sobrevive al hero viejo: es el rótulo en versalitas que usan el
+   catálogo, el visor y el glosario. Se conserva tal cual, junto con su
+   variante de la sidebar. Lo demás de este bloque (intro-row, intro-copy,
+   mission-stat, stat-icon, stat-rule) era el hero anterior, ya sustituido
+   por HeroNawi.vue: no lo referencia ninguna plantilla. */
 .eyebrow {
   display: block;
   font-size: 10px;
@@ -342,103 +361,13 @@ i.bi { line-height: 1; }
   text-transform: uppercase;
 }
 
-.intro-row .eyebrow span {
-  margin-right: 10px;
-  color: var(--text-secondary);
-}
-
 /* La sidebar usa --bg-elevated: --text-muted no alcanza AA ahí */
 .sidebar .eyebrow { color: var(--text-secondary); }
-
-.intro-row h1 {
-  margin-top: 16px;
-  font: 700 clamp(32px, 3.4vw, 44px)/1.14 Manrope, sans-serif;
-  letter-spacing: -1.6px;
-  color: var(--text-title);
-}
-
-.intro-row h1 span { color: var(--title-accent); }
-
-.intro-copy {
-  max-width: 460px;
-  margin-top: 14px;
-  font-size: 15px;
-  line-height: 1.7;
-  color: var(--text-secondary);
-}
-
-.mission-stat {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 6px;
-  flex-shrink: 0;
-}
-
-.stat-icon {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-panel);
-  color: var(--icon-info);
-  font-size: 18px;
-}
-
-.mission-stat strong {
-  display: block;
-  font: 700 19px Manrope, sans-serif;
-  letter-spacing: -0.4px;
-  color: var(--text-title);
-}
-
-.mission-stat strong small {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.mission-stat div span {
-  display: block;
-  margin-top: 2px;
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-.stat-rule {
-  width: 1px;
-  height: 38px;
-  margin: 0 4px;
-  background: var(--border);
-}
 
 /* ------------------------------------------------------------ workspace --- */
 .workspace {
   width: 100%;
   padding: 0;
-}
-
-.workspace .row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 18px;
-  margin: 0;
-}
-
-.workspace .row > [class*='col-'] {
-  width: auto;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-}
-
-@media (min-width: 992px) {
-  .workspace .row {
-    grid-template-columns: clamp(286px, 25%, 340px) minmax(0, 1fr);
-    align-items: start;
-  }
 }
 
 /* Tarjeta (card-image de la guía) */
@@ -1192,17 +1121,12 @@ i.bi { line-height: 1; }
 
 @media (max-width: 1100px) {
   .app-shell { padding: 0 40px; }
-  .intro-row { gap: 28px; padding: 34px 28px; }
-  .intro-copy { max-width: 380px; }
 }
 
 @media (max-width: 991px) {
   .app-shell { padding: 0 28px; }
   .sidebar { min-height: 0; }
   .object-list { max-height: 340px; overflow-y: auto; }
-  .intro-row { padding: 30px 24px; }
-  .intro-row h1 { font-size: 34px; }
-  .mission-stat { gap: 12px; }
   .sky-stage { min-height: 300px; }
 }
 
@@ -1212,18 +1136,7 @@ i.bi { line-height: 1; }
   .brand { font-size: 21px; }
   .brand-mark { width: 28px; height: 28px; font-size: 14px; }
   .mission-label { font-size: 9px; gap: 7px; }
-  .help-button { width: 32px; height: 32px; }
   .theme-button { width: 32px; height: 32px; }
-
-  .intro-row {
-    display: block;
-    margin-top: 16px;
-    padding: 24px 18px;
-  }
-
-  .intro-row h1 { font-size: 31px; letter-spacing: -1.1px; }
-  .intro-copy { max-width: none; font-size: 14px; }
-  .mission-stat { display: none; }
 
   .sidebar { padding: 16px 14px; }
 
@@ -1275,7 +1188,6 @@ i.bi { line-height: 1; }
 @media (max-width: 420px) {
   .mission-label { font-size: 8px; gap: 5px; }
   .label-divider { display: none; }
-  .intro-row h1 { font-size: 28px; }
   .sky-stage { height: 245px; min-height: 245px; }
   .frame-counter { font-size: 9px; }
   .transport { gap: 4px; }
