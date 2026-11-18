@@ -129,7 +129,8 @@ export default {
     previous: 'PREVIOUS',
     illustrativeSuffix: ' · ILLUSTRATIVE',
     interpolated: 'interpolated · not original pixels',
-    dubiousQuality: 'quality flagged as doubtful',
+    qualityReview: 'review crop',
+    qualityReviewHelp: 'The backend flagged this crop for review but did not provide a reason. Avoid treating it as a firm measurement.',
     frameAlt: '{nombre} crop from {fecha} in {banda}',
     trajectoryAria: 'Expected path between the first and last frame ({desde} to {hasta})',
     coordsStatus: {
@@ -164,6 +165,7 @@ export default {
     zoomGroup: 'Crop zoom and scaling method',
     zoomTitle: 'zoom',
     zoomScale: 'Scale {escala}x: crop at {pixeles} pixels',
+    zoomUnavailable: 'This scale does not fit in the viewer space available.',
     smooth: 'smoothed',
     pixel: 'real pixel',
     smoothAria: 'Smoothed mode on: the image is interpolated and does not show the original pixels. Switch to real pixel.',

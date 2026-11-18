@@ -71,6 +71,8 @@ const notice = ref('');
  */
 const sobreCover = ref(true);
 let observadorCover = null;
+/** Limpieza de los listeners de medición del zoom por alto. */
+let observadorZoom = null;
 
 const selectedObject = computed(() => objects.value.find((item) => item.id === objectId.value) ?? objects.value[0] ?? null);
 const frame = computed(() => frames.value[frameIndex.value] ?? null);
@@ -98,16 +100,80 @@ function textoError(error) {
 // Zoom del recorte real. El PNG del backend son 58x58 px: no hay más detalle
 // que ese, así que el zoom solo agranda. Se ofrecen escalas ENTERAS para que
 // cada píxel del PNG caiga en un bloque exacto de pantalla (nunca fracciones,
-// que deforman el bloque). 4x = 232 px por defecto en escritorio; también entra
-// en pantallas chicas.
+// que deforman el bloque). 4x = 232 px por defecto en escritorio.
+//
+// El ancho no alcanza como criterio: en pantallas bajas (móvil rotado, ventanas
+// chatas) 4x no entra a lo alto y, con `overflow: hidden`, del recorte solo se
+// veía una franja. El zoom se elige por el alto REAL disponible para el recorte,
+// que se mide del propio layout (no de una constante adivinada) en
+// `ajustarZoomAlAlto`. Sigue siendo un múltiplo entero de 58 px.
 const ZOOMS = [1, 2, 4, 8];
 const TAMANO_RECORTE_PX = 58;
-const zoom = ref(4);
+/** Escala por defecto: la de escritorio. */
+const ZOOM_BASE = 4;
+const zoom = ref(ZOOM_BASE);
+const zoomDisponiblePx = ref(0);
+const zoomEscalasDisponibles = computed(() =>
+  ZOOMS.filter((escala) => TAMANO_RECORTE_PX * escala <= zoomDisponiblePx.value),
+);
+// null = zoom automático. Si el usuario elige una escala, la recordamos aunque
+// haya que bajarla temporalmente para que el recorte quepa en el viewport.
+const zoomManual = ref(null);
 // 'píxel real' por defecto (vecino más cercano). 'suavizado' interpola y por eso
 // NO muestra los píxeles originales: la interfaz lo avisa en el visor.
 const suavizado = ref(false);
-const zoomActivo = computed(() => (ZOOMS.includes(zoom.value) ? zoom.value : 4));
+const zoomActivo = computed(() => (ZOOMS.includes(zoom.value) ? zoom.value : ZOOM_BASE));
 const zoomPx = computed(() => TAMANO_RECORTE_PX * zoomActivo.value);
+
+/**
+ * Elige el zoom que entra en el alto/ancho disponible. La regla es REDUCIR
+ * cuando no entra, nunca agrandar por encima del valor de escritorio: el 4x es
+ * el diseño por defecto, y crecer a 8x en un monitor grande cambiaría el visor
+ * de todo el mundo. Solo se baja si el recorte no cabe.
+ *
+ * Nunca devuelve fracciones: el proyecto exige bloques exactos.
+ */
+function elegirZoom(disponiblePx, maximo) {
+  const caben = ZOOMS.filter((escala) => escala <= maximo && TAMANO_RECORTE_PX * escala <= disponiblePx);
+  return caben.length ? Math.max(...caben) : ZOOMS[0];
+}
+
+function ajustarZoomAlAlto() {
+  const stage = document.querySelector('.sky-stage.is-real');
+  if (!stage) return;
+
+  const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hx-nav-h')) || 80;
+  const cs = getComputedStyle(stage);
+  const paddingAlto = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  const paddingAncho = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+
+  // Margen para que el recorte no quede pegado al nav ni obligue a scrollear
+  // dos píxeles para ver el borde inferior.
+  const MARGEN = 16;
+
+  // El recorte tiene que entrar en las DOS direcciones. Si se mira solo el alto,
+  // en un móvil vertical sale 8x (464 px) en una columna de 333 px y se sale de
+  // ancho. Con `overflow: hidden` eso también se ve cortado.
+  const disponibleAlto = window.innerHeight - navH - paddingAlto - MARGEN;
+  const disponibleAncho = stage.clientWidth - paddingAncho;
+  const disponible = Math.max(0, Math.min(disponibleAlto, disponibleAncho));
+  zoomDisponiblePx.value = disponible;
+
+  // En automático conservamos el zoom base (4x). Con elección manual,
+  // respetamos esa preferencia y solo la reducimos mientras no quepa; al volver
+  // a haber espacio, recuperar `zoomManual` restaura la escala elegida.
+  const maximo = zoomManual.value ?? ZOOM_BASE;
+  const siguiente = elegirZoom(disponible, maximo);
+  if (siguiente !== zoom.value) zoom.value = siguiente;
+}
+
+function seleccionarZoom(escala) {
+  // Protección además del estado disabled: no aceptar una escala que haya
+  // dejado de caber entre el render y el evento de click.
+  if (!zoomEscalasDisponibles.value.includes(escala)) return;
+  zoomManual.value = escala;
+  ajustarZoomAlAlto();
+}
 
 /**
  * Posición del objeto en el recorte, en porcentaje, a partir de
@@ -407,6 +473,9 @@ async function loadCatalog() {
     loadError.value = textoError(error);
   } finally {
     loading.value = false;
+    // El escenario no existe hasta que hay datos: hay que remedir el zoom ahora,
+    // no en onMounted.
+    requestAnimationFrame(ajustarZoomAlAlto);
   }
 }
 
@@ -456,6 +525,18 @@ onMounted(() => {
   loadCatalog();
   window.addEventListener('keydown', handleKeyDown);
 
+  // El zoom del recorte depende del alto disponible, así que hay que remedir
+  // cuando cambia. Se mide tarde (rAF) para que el layout ya tenga los chips,
+  // la leyenda y los controles colocados.
+  const remedir = () => requestAnimationFrame(ajustarZoomAlAlto);
+  remedir();
+  window.addEventListener('resize', remedir, { passive: true });
+  window.addEventListener('orientationchange', remedir, { passive: true });
+  observadorZoom = { disconnect: () => {
+    window.removeEventListener('resize', remedir);
+    window.removeEventListener('orientationchange', remedir);
+  } };
+
   // El cover mide 100svh y el anclaje del catálogo deja justo la altura del nav:
   // la barra pasa a "fuera del cover" cuando el borde inferior de la foto cruza
   // el borde inferior de la barra. Así, al llegar al catálogo, lo que queda
@@ -480,6 +561,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
   observadorCover?.disconnect?.();
+  observadorZoom?.disconnect?.();
 });
 </script>
 
@@ -560,14 +642,14 @@ onUnmounted(() => {
               </template>
               <div v-if="compare" class="compare-wipe" :class="{ 'is-real': !previousFrame.illustrative }" :style="previousFrame.illustrative ? { backgroundImage: `url(${previousFrame.url})` } : null"><img v-if="!previousFrame.illustrative" class="pixel-frame" :src="previousFrame.url" alt="" /><span class="wipe-label">{{ t('viewer.previous') }} · {{ previousFrame.date }}{{ previousFrame.illustrative ? t('viewer.illustrativeSuffix') : '' }}</span><span class="wipe-line" /></div>
               <div v-if="!frame.illustrative && suavizado" class="escala-aviso"><IconoNawi nombre="agua" /> {{ t('viewer.interpolated') }}</div>
-              <div class="image-date"><span>{{ frame.date }}</span><small>{{ frame.band }}</small><small v-if="frame.calidadOk === false" class="frame-calidad">{{ t('viewer.dubiousQuality') }}</small></div>
+              <div class="image-date"><span>{{ frame.date }}</span><small>{{ frame.band }}</small><small v-if="frame.calidadOk === false" class="frame-calidad" :title="t('viewer.qualityReviewHelp')" :aria-label="t('viewer.qualityReviewHelp')">{{ t('viewer.qualityReview') }}</small></div>
             </div>
             <div class="timeline">
               <div class="timeline-top"><span class="timeline-title"><IconoNawi nombre="historial" /> {{ hayCuadrosReales ? t('timeline.title') : t('timeline.titleIllustrative') }}</span><span class="frame-counter">{{ t('timeline.frame') }} <b>{{ String(frameIndex + 1).padStart(2, '0') }}</b> <span>/ {{ String(frames.length).padStart(2, '0') }}</span></span></div>
               <input v-model.number="frameIndex" class="time-range" :style="{ '--progress': `${progressPercent}%` }" type="range" min="0" :max="frames.length - 1" step="1" :aria-label="t('timeline.rangeAria')" />
               <div class="timeline-dates"><button v-for="(item, index) in frames" :key="item.date" class="date-tick" :class="{ current: index === frameIndex }" @click="frameIndex = index">{{ item.date.slice(5) }}</button></div>
             </div>
-            <div class="player-controls"><div class="transport"><button class="control-button" :aria-label="t('controls.prev')" @click="frameIndex = (frameIndex - 1 + frames.length) % frames.length"><IconoNawi nombre="anterior" /></button><button class="play-button" :aria-label="playing ? t('controls.pause') : t('controls.play')" @click="playing = !playing"><IconoNawi :nombre="playing ? 'pausa' : 'reproducir'" /></button><button class="control-button" :aria-label="t('controls.next')" @click="frameIndex = (frameIndex + 1) % frames.length"><IconoNawi nombre="siguiente" /></button><span class="play-caption">{{ playing ? t('controls.playing') : t('controls.idle') }}</span></div><div v-if="!frame.illustrative" class="zoom-controls" role="group" :aria-label="t('controls.zoomGroup')"><span class="zoom-title" aria-hidden="true"><IconoNawi nombre="zoom" /> {{ t('controls.zoomTitle') }}</span><button v-for="escala in ZOOMS" :key="escala" type="button" class="zoom-button" :class="{ 'is-active': zoomActivo === escala }" :aria-pressed="zoomActivo === escala" :aria-label="t('controls.zoomScale', { escala, pixeles: TAMANO_RECORTE_PX * escala })" :title="`${escala}x · ${TAMANO_RECORTE_PX * escala} px`" @click="zoom = escala">{{ escala }}x</button><button type="button" class="zoom-mode" :class="{ 'is-suave': suavizado }" :aria-pressed="suavizado" :aria-label="suavizado ? t('controls.smoothAria') : t('controls.pixelAria')" :title="suavizado ? t('controls.smoothTitle') : t('controls.pixelTitle')" @click="suavizado = !suavizado"><IconoNawi :nombre="suavizado ? 'agua' : 'pixel'" /><span>{{ suavizado ? t('controls.smooth') : t('controls.pixel') }}</span></button></div><button class="compare-button" :class="{ 'is-on': compare }" @click="compare = !compare"><IconoNawi nombre="comparar" /> <span>{{ compare ? t('controls.closeCompare') : t('controls.compare') }}</span></button></div>
+            <div class="player-controls"><div class="transport"><button class="control-button" :aria-label="t('controls.prev')" @click="frameIndex = (frameIndex - 1 + frames.length) % frames.length"><IconoNawi nombre="anterior" /></button><button class="play-button" :aria-label="playing ? t('controls.pause') : t('controls.play')" @click="playing = !playing"><IconoNawi :nombre="playing ? 'pausa' : 'reproducir'" /></button><button class="control-button" :aria-label="t('controls.next')" @click="frameIndex = (frameIndex + 1) % frames.length"><IconoNawi nombre="siguiente" /></button><span class="play-caption">{{ playing ? t('controls.playing') : t('controls.idle') }}</span></div><div v-if="!frame.illustrative" class="zoom-controls" role="group" :aria-label="t('controls.zoomGroup')"><span class="zoom-title" aria-hidden="true"><IconoNawi nombre="zoom" /> {{ t('controls.zoomTitle') }}</span><button v-for="escala in ZOOMS" :key="escala" type="button" class="zoom-button" :class="{ 'is-active': zoomActivo === escala }" :disabled="!zoomEscalasDisponibles.includes(escala)" :aria-pressed="zoomActivo === escala" :aria-label="t('controls.zoomScale', { escala, pixeles: TAMANO_RECORTE_PX * escala }) + (!zoomEscalasDisponibles.includes(escala) ? `. ${t('controls.zoomUnavailable')}` : '')" :title="zoomEscalasDisponibles.includes(escala) ? `${escala}x · ${TAMANO_RECORTE_PX * escala} px` : t('controls.zoomUnavailable')" @click="seleccionarZoom(escala)">{{ escala }}x</button><button type="button" class="zoom-mode" :class="{ 'is-suave': suavizado }" :aria-pressed="suavizado" :aria-label="suavizado ? t('controls.smoothAria') : t('controls.pixelAria')" :title="suavizado ? t('controls.smoothTitle') : t('controls.pixelTitle')" @click="suavizado = !suavizado"><IconoNawi :nombre="suavizado ? 'agua' : 'pixel'" /><span>{{ suavizado ? t('controls.smooth') : t('controls.pixel') }}</span></button></div><button class="compare-button" :class="{ 'is-on': compare }" @click="compare = !compare"><IconoNawi nombre="comparar" /> <span>{{ compare ? t('controls.closeCompare') : t('controls.compare') }}</span></button></div>
           </div>
           <div v-else-if="sinCuadros" class="viewer panel">
             <div class="viewer-toolbar"><div><span class="eyebrow">{{ t('viewer.skyField') }} <span class="toolbar-slash">/</span> {{ tagDe(selectedObject) }}</span><h2>{{ nombreObjeto }}</h2></div><button class="share-button" @click="shareView"><IconoNawi nombre="compartir" /><span>{{ t('viewer.share') }}</span></button></div>

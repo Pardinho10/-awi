@@ -990,6 +990,57 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   border-bottom: 1px solid var(--hx-line-soft);
 }
 
+/* --- Etiqueta de coordenadas, acotada por ANCHO ------------------------- */
+
+/* `.coordinate-label` es `position: absolute` y en columnas angostas se comía
+   el recorte: medía 367x282 px con fondo semitransparente y blur, tapando el
+   dato que hay debajo.
+   Dos causas, y hacen falta las dos correcciones:
+     1. No tenía ancho declarado, así que su caja la decidía el contenido y el
+        texto largo se partía en muchísimas líneas. Se acota y se recorta a
+        una línea (el valor completo sigue en el `title`).
+     2. `top: 0` venía de acá y `bottom: 14px` de la media query de 680 px de
+        styles.css. Con top Y bottom definidos, el navegador estira la caja
+        hasta cubrir todo el alto: de ahí los 282 px. Se fija un solo borde.
+   El problema es de ancho, así que la corrección va acá y no en la media query
+   de altura, donde no llegaba a aplicarse en pantallas altas y angostas. */
+@media (max-width: 900px) {
+  .hx-theme .coordinate-label {
+    top: 0;
+    bottom: auto;
+    max-width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 6px 10px;
+    font-size: 9px;
+  }
+}
+
+/* Pantallas bajas (móvil rotado, ventanas chatas): los chips se envolvían en
+   cuatro filas y robaban más de 100 px de alto antes de llegar al recorte, que
+   es el dato. Se fuerzan a una sola fila que se puede desplazar en horizontal.
+   La procedencia ('según los datos de la misión') se oculta: no es dato y
+   ocupaba una línea entera. */
+@media (max-height: 500px) {
+  .hx-theme .viewer-meta {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block: 8px;
+  }
+
+  .hx-theme .viewer-meta::-webkit-scrollbar { display: none; }
+
+  .hx-theme .meta-chip { flex: 0 0 auto; }
+
+  .hx-theme .meta-origen { display: none; }
+
+  /* La fecha se achica para no comer el escenario. */
+  .hx-theme .image-date { padding: 6px 10px; }
+  .hx-theme .image-date span { font-size: 13px; }
+}
+
 .hx-theme .meta-chip {
   display: inline-flex;
   align-items: center;
@@ -1204,10 +1255,19 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 /* Con datos reales no hay viñeta ni grilla: cualquier degradado sobre el
    recorte se puede confundir con una variación real de brillo. */
 .hx-theme .sky-stage.is-real {
-  /* El escenario se ajusta al recorte en vez de reservar una caja fija: con
-     4x el PNG mide 232px y una caja de 420 dejaba la mitad vacía. */
+  /* El escenario se ajusta al recorte en vez de reservar una caja fija: el alto
+     lo pone el recorte (58 px × zoom) más su padding. Los min-height de las
+     media queries quedan anulados acá a propósito: si la caja reservara un alto
+     fijo, en pantallas bajas sería más alta que el viewport y, con
+     `overflow: hidden`, del recorte solo se vería una franja. El zoom lo elige
+     App.vue midiendo el alto disponible. */
   aspect-ratio: auto;
   min-height: 0;
+  /* La hoja vieja (styles.css, en retirada) fija `height: 280px` en su media
+     query de 680px. Sin anularlo, el escenario real medía 280 px siempre y el
+     alto lo mandaba esa constante, no el recorte. */
+  height: auto;
+  max-height: none;
   max-width: none;
   display: grid;
   place-items: center;
@@ -1560,10 +1620,24 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
   transition: border-color var(--hx-t-fast), color var(--hx-t-fast);
 }
 
-.hx-theme .zoom-button:hover,
+.hx-theme .zoom-button:hover:not(:disabled),
 .hx-theme .zoom-mode:hover {
   border-color: var(--hx-line-hot);
   color: var(--hx-ink);
+}
+
+/* Escala imposible en el espacio actual: sigue visible para mostrar las
+   opciones, pero no parece accionable. El title y aria-label explican por qué. */
+.hx-theme .zoom-button:disabled {
+  border-color: var(--hx-line-soft);
+  color: var(--hx-ink-ghost);
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.hx-theme .zoom-button:disabled:hover {
+  border-color: var(--hx-line-soft);
+  color: var(--hx-ink-ghost);
 }
 
 /* Activo: borde y texto en oro, sin relleno. */
@@ -1616,7 +1690,9 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 }
 
 @media (max-width: 900px) {
-  .hx-theme .sky-stage {
+  /* Solo el escenario ilustrativo reserva alto fijo; el real se ajusta a su
+     recorte. */
+  .hx-theme .sky-stage:not(.is-real) {
     min-height: 260px;
   }
 
@@ -1631,7 +1707,7 @@ html[data-theme="light"] .hx-theme .topbar.is-sobre-cover .lang-option:hover {
 }
 
 @media (max-width: 560px) {
-  .hx-theme .sky-stage {
+  .hx-theme .sky-stage:not(.is-real) {
     min-height: 220px;
   }
 

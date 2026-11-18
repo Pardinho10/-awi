@@ -131,7 +131,8 @@ export default {
     previous: 'ANTERIOR',
     illustrativeSuffix: ' · ILUSTRATIVO',
     interpolated: 'interpolado · no son píxeles originales',
-    dubiousQuality: 'calidad marcada como dudosa',
+    qualityReview: 'revisar recorte',
+    qualityReviewHelp: 'El backend marcó este recorte para revisión, pero no indicó el motivo. Evita tomarlo como una medición firme.',
     frameAlt: 'Recorte de {nombre} del {fecha} en {banda}',
     trajectoryAria: 'Trayectoria esperada entre el primer y el último cuadro ({desde} a {hasta})',
     coordsStatus: {
@@ -166,6 +167,7 @@ export default {
     zoomGroup: 'Zoom del recorte y método de escalado',
     zoomTitle: 'zoom',
     zoomScale: 'Escala {escala}x: recorte a {pixeles} píxeles',
+    zoomUnavailable: 'Esta escala no cabe en el espacio disponible del visor.',
     smooth: 'suavizado',
     pixel: 'píxel real',
     smoothAria: 'Modo suavizado activo: la imagen está interpolada y no muestra los píxeles originales. Cambiar a píxel real.',
